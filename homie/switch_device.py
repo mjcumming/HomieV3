@@ -24,8 +24,6 @@ mqtt_settings = {
 }
 
 
-
-
 class Switch_Device(Device_Base):
 
     def __init__(self, device_id='switch', name='Switch', homie_topic='homie', fw_name='python',fw_version=sys.version, update_interval=60, implementation=sys.platform, mqtt_settings=mqtt_settings):
@@ -35,15 +33,34 @@ class Switch_Device(Device_Base):
         node = (Node_Base('switch','Switch','switch'))
         self.add_node (node)
 
-        switch_property = Switch ()
-        node.add_property (switch_property)
+        def callback_function(topic,message):
+            self.callback(topic,message)
+
+        self.switch = Switch (callback = callback_function)
+        node.add_property (self.switch)
+
+        self.start()
+
+    def update(self,on):
+        if on:
+            self.switch.value = 'ON'
+        else:
+            self.switch.value = 'OFF'
+
+    def callback(self,topic,message):
+        print('call back',topic,message)
+        
 
 if __name__ == '__main__':
     try:
 
-        hd = Switch_Device(name = 'Test Switch')
-        hd.start()
-        time.sleep(5)
+        switch = Switch_Device(name = 'Test Switch')
+        
+        while True:
+            time.sleep(5)
+            switch.update(True)
+            time.sleep(5)
+            switch.update(False)
 
     except (KeyboardInterrupt, SystemExit):
         print("Quitting.")        

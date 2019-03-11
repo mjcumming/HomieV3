@@ -23,16 +23,20 @@ data_types = [
 
 class Property_Base(object):
 
-    def __init__(self, id, name = None, settable = False, retained = True, unit = '', data_type= 'string', data_format = None, value = None):
+    def __init__(self, id, name=None, settable=False, retained=True, qos=1, unit='', data_type='string', data_format=None, value=None, callback=None):
         assert validate_id (id)
         self.id = id
         self.name = name
         self.retained = retained
+        self.qos = qos
         self.unit = unit
         assert data_type in data_types
         self.data_type = data_type
         self.data_format = data_format
         self.settable= settable
+        if settable:
+            assert(callback)
+            self.callback = callback
 
         self.parent_publisher = None
 
@@ -46,8 +50,7 @@ class Property_Base(object):
     @value.setter
     def value(self, value):
         self._value = value
-        self.publish (None,value)
-        # !!! publish value
+        self.publish (self.topic,value,self.retained,self.qos)
     
     @property
     def topic(self):
@@ -72,10 +75,17 @@ class Property_Base(object):
             self.publish ("/".join((self.topic, "$format")), self.data_format, True, 1)
 
     def get_subscriptions(self):
-        return {self.id : self.message_handler}
+        if self.settable:
+            return {"/".join((self.topic, "set")) : self.message_handler}
+        else:   
+            return {}
 
     def message_handler(self,topic,payload):
-        logging.info ('Property Message:  Topic {}, Payload {}'.format(topic,payload))
+        logging.info ('MQTT Property Message:  Topic {}, Payload {}'.format(topic,payload))
+        self.process_message(topic,payload)
+
+    def process_message(self,topic,payload):
+        self.callback(topic,payload)
 
 if __name__ == '__main__':
     np = Property_Base ('x','x')

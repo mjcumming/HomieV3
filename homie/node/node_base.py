@@ -48,7 +48,7 @@ class Node_Base(object):
     def get_subscriptions(self):
         subscriptions = {}
         
-        for id,property_ in self.properties.items():
+        for _,property_ in self.properties.items():
             subscriptions.update (property_.get_subscriptions())
 
         return subscriptions

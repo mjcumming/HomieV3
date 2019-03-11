@@ -74,8 +74,6 @@ class Device_Base(object):
 
         self.device_topic = "/".join((homie_topic, self.device_id))
 
-        self.add_subscription ("/".join((self.device_topic, "$broadcast/#")),self.broadcast_handler)
-
     def start(self):
         self._mqtt_connect()
 
@@ -106,33 +104,32 @@ class Device_Base(object):
 
     def publish_statistics(self):
         self.publish("/".join((self.device_topic, "$stats/uptime")),time.time()-self.start_time)
-        #self.publish("/".join((self.device_topic, "$")),self.)
 
     def add_subscription(self,topic,handler):
         self.subscription_handlers [topic] = handler
+        self.mqtt_client.subscribe (topic,0)
+        logging.info ('MQTT subscribed to {}'.format(topic))
 
     def subscribe_topics(self):
-        for topic in self.subscription_handlers:
-            self.mqtt_client.subscribe (topic,0)
-            logging.info ('MQTT subscribed to {}'.format(topic))
+        self.add_subscription ("/".join((self.device_topic, "$broadcast/#")),self.broadcast_handler)
+
+        for _,node in self.nodes.items():
+            for topic,handler in node.get_subscriptions().items():
+                self.add_subscription(topic,handler)
   
     def add_node(self,node):
         self.nodes [node.id] = node
         node.topic = self.device_topic
         node.parent_publisher = self.publish
 
-        for topic,handler in node.get_subscriptions().items():
-            self.subscribe_topics(topic,handler)
-
     def publish_nodes(self):
         nodes = "/".join(self.nodes.keys())
         self.publish("/".join((self.device_topic, "$nodes")),nodes)
-        for id,node in self.nodes.items():
+        for _,node in self.nodes.items():
             node.publish_attributes()
 
     def broadcast_handler(self,topic,payload):
         logging.info ('Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
-
 
     def _mqtt_validate_settings(self,settings):
         for setting,value in mqtt_settings.items():
@@ -178,6 +175,7 @@ class Device_Base(object):
             self.mqtt_connected = True
             self.publish_attributes()
             self.publish_nodes()
+            self.subscribe_topics()
             self.state='ready'
         else:
             self.mqtt_connected = False
@@ -189,7 +187,9 @@ class Device_Base(object):
 
         if topic in self.subscription_handlers:
             self.subscription_handlers [topic] (topic, payload)        
-  
+        else:
+            logging.warning ('Unknown MQTT Message: Topic {}, Payload {}'.format(topic,payload))
+    
     def _on_publish(self, *args):
         #print('MQTT Publish: Payload {}'.format(*args))
         pass
