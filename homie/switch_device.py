@@ -26,7 +26,7 @@ mqtt_settings = {
 
 class Switch_Device(Device_Base):
 
-    def __init__(self, device_id='switch', name='Switch', homie_topic='homie', fw_name='python',fw_version=sys.version, update_interval=60, implementation=sys.platform, mqtt_settings=mqtt_settings):
+    def __init__(self, device_id='switch', name='Switch', homie_topic='homie', fw_name='python',fw_version=sys.version, update_interval=2, implementation=sys.platform, mqtt_settings=mqtt_settings):
 
         Device_Base.__init__ (self, device_id, name, homie_topic, fw_name, fw_version, update_interval, implementation, mqtt_settings)
 
@@ -64,4 +64,5 @@ if __name__ == '__main__':
 
     except (KeyboardInterrupt, SystemExit):
         print("Quitting.")        
+        quit()
 

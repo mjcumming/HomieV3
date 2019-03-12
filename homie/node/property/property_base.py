@@ -33,7 +33,7 @@ class Property_Base(object):
         assert data_type in data_types
         self.data_type = data_type
         self.data_format = data_format
-        self.settable= settable
+        self.settable = settable
         if settable:
             assert(callback)
             self.callback = callback
@@ -81,11 +81,9 @@ class Property_Base(object):
             return {}
 
     def message_handler(self,topic,payload):
-        logging.info ('MQTT Property Message:  Topic {}, Payload {}'.format(topic,payload))
+        logger.info ('MQTT Property Message:  Topic {}, Payload {}'.format(topic,payload))
         self.process_message(topic,payload)
 
     def process_message(self,topic,payload):
         self.callback(topic,payload)
 
-if __name__ == '__main__':
-    np = Property_Base ('x','x')

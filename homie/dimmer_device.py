@@ -28,7 +28,7 @@ class Dimmer_Device(Device_Base):
 
     def __init__(self, device_id='dimmer', name='Dimmer', homie_topic='homie', fw_name='python',fw_version=sys.version, update_interval=60, implementation=sys.platform, mqtt_settings=mqtt_settings):
 
-        Device_Base.__init__ (self, device_id, name, homie_topic, fw_name, fw_version, update_interval, implementation, mqtt_settings)
+        super().__init__ (device_id, name, homie_topic, fw_name, fw_version, update_interval, implementation, mqtt_settings)
 
         node = (Node_Base('dimmer','Dimmer','dimmer'))
         self.add_node (node)
@@ -51,7 +51,7 @@ class Dimmer_Device(Device_Base):
 if __name__ == '__main__':
     try:
 
-        dimmer = Dimmer_Device(name = 'Test Switch')
+        dimmer = Dimmer_Device(name = 'Test Dimmer')
         
         while True:
             time.sleep(5)

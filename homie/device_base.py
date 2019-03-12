@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-
 import logging
+import atexit
 import sys
 import time
 import binascii
@@ -9,6 +9,7 @@ import paho.mqtt.client as mqtt_client
 from uuid import getnode as get_mac
 from network_information import Network_Information
 from helpers import validate_id
+from repeating_timer import Repeating_Timer
 
 from node.node_base import Node_Base
 from node.property.property_base import Property_Base
@@ -76,6 +77,17 @@ class Device_Base(object):
 
     def start(self):
         self._mqtt_connect()
+
+        def update_status():
+            self.publish_statistics()
+
+        self.timer = Repeating_Timer(self.update_interval,update_status)
+
+        def kill_timer():# ************ does not work....
+            print('asdfasdfasdasdfasdffdsaasdf')
+            self.timer.stop()
+        
+        atexit.register(kill_timer)
 
     @property
     def state(self):
@@ -205,25 +217,4 @@ class Device_Base(object):
         else:
             logger.warning('not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
 
-
-if __name__ == '__main__':
-    try:
-
-        hd = Device_Base(name = 'Test')
-
-        test_node = Node_Base('test-id','test_name','test_type')
-        hd.add_node(test_node)
-
-        test_property = Property_Base('test-property-1')
-        test_node.add_property (test_property)
-        test_property = Property_Base('test-property-2')
-        test_node.add_property (test_property)
-        test_property = Switch('test-switch-1')
-        test_node.add_property (test_property)
-
-
-        hd.start()
-        time.sleep(5)
-    except (KeyboardInterrupt, SystemExit):
-        print("Quitting.")        
 

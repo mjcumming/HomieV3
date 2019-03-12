@@ -7,20 +7,20 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Property_Integer(Property_Base):
 
-    def __init__(self, id, name, settable=True, retained=True, qos=1, unit=None, data_type='integer', data_format=None, value=None, callback=None):
-        super().__init__(id,name,settable,retained,qos,unit,'integer',data_format,value,callback)
+    def __init__(self, id, name, settable=True, retained=True, qos=1, unit=None, data_type='float', data_format=None, value=None, callback=None):
+        super().__init__(id,name,settable,retained,qos,unit,'float',data_format,value,callback)
 
         if data_format:
             range = data_format.split(':')
-            self.low_value = int(range[0])
-            self.high_value = int(range[1])
+            self.low_value = float(range[0])
+            self.high_value = float(range[1])
         else:
             self.low_value = None
             self.high_value = None
 
     def message_handler(self,topic,payload):
         try: 
-            value = int(payload)
+            value = float(payload)
             valid = True
 
             if self.value is not None and value < self.low_value:
@@ -31,8 +31,7 @@ class Property_Integer(Property_Base):
             if valid:
                 super().message_handler(topic,payload)
             else:
-                logger.warning ('Payload integer value out of range for property for message {}, payload is {}, low value {}. high value {}'.format(topic,payload,self.low_value,self.high_value))
-        except:
-            logger.warning ('Unable to convert payload to integer property for message {}, payload is {}'.format(topic,payload))
+                logger.warning ('Payload float value out of range for property for message {}, payload is {}, low value {}. high value {}'.format(topic,payload,self.low_value,self.high_value))
 
- 
+        except:
+            logger.warning ('Unable to convert payload to float property message {}, payload is {}'.format(topic,payload))
