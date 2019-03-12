@@ -1,0 +1,8 @@
+*.json
+*.pyc
+*.sublime-*
+__pycache__
+build/*
+dist/*
+homie.egg-info/*
+MANIFEST
