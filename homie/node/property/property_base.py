@@ -23,8 +23,8 @@ data_types = [
 
 class Property_Base(object):
 
-    def __init__(self, id, name=None, settable=False, retained=True, qos=1, unit='', data_type='string', data_format=None, value=None, callback=None):
-        assert validate_id (id)
+    def __init__(self, id, name=None, settable=False, retained=True, qos=1, unit=None, data_type=None, data_format=None, value=None, set_value=None):
+        assert validate_id (id), id
         self.id = id
         self.name = name
         self.retained = retained
@@ -35,8 +35,8 @@ class Property_Base(object):
         self.data_format = data_format
         self.settable = settable
         if settable:
-            assert(callback)
-            self.callback = callback
+            assert(set_value)
+            self.set_value = set_value
 
         self.parent_publisher = None
 
@@ -85,5 +85,5 @@ class Property_Base(object):
         self.process_message(topic,payload)
 
     def process_message(self,topic,payload):
-        self.callback(topic,payload)
+        self.set_value(topic,payload)
 

@@ -7,9 +7,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Property_Enum(Property_Base):
 
-    def __init__(self, id, name, settable=True, retained=True, qos=1, unit=None, data_type='enum', data_format=None, value=None, callback=None):
+    def __init__(self, id, name, settable=True, retained=True, qos=1, unit=None, data_type='enum', data_format=None, value=None, set_value=None):
         assert(data_format)
-        super().__init__(id,name,settable,retained,qos,unit,data_type,data_format,value,callback)
+        super().__init__(id,name,settable,retained,qos,unit,data_type,data_format,value,set_value)
 
         self.enum_list = data_format.split(',')
 

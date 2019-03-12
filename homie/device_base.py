@@ -70,12 +70,11 @@ class Device_Base(object):
         self.nodes = {}
         self.subscription_handlers = {}
 
-        self.start_time = time.time()
-        self.next_update = time.time()
-
         self.device_topic = "/".join((homie_topic, self.device_id))
 
     def start(self):
+        self.start_time = time.time()
+        
         self._mqtt_connect()
 
         def update_status():
@@ -178,7 +177,7 @@ class Device_Base(object):
 
             self.mqtt_client.loop_start()
         except Exception as e:
-            logging.warning ('Unable to connect to MQTT Broker {}'.format(e))
+            logger.warning ('Unable to connect to MQTT Broker {}'.format(e))
 
     def _on_connect(self,client, userdata, flags, rc):
         logger.debug("_connect: {}".format(rc))        
@@ -200,7 +199,7 @@ class Device_Base(object):
         if topic in self.subscription_handlers:
             self.subscription_handlers [topic] (topic, payload)        
         else:
-            logging.warning ('Unknown MQTT Message: Topic {}, Payload {}'.format(topic,payload))
+            logger.warning ('Unknown MQTT Message: Topic {}, Payload {}'.format(topic,payload))
     
     def _on_publish(self, *args):
         #print('MQTT Publish: Payload {}'.format(*args))

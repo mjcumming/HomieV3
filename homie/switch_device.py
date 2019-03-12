@@ -33,10 +33,10 @@ class Switch_Device(Device_Base):
         node = (Node_Base('switch','Switch','switch'))
         self.add_node (node)
 
-        def callback_function(topic,message):
-            self.callback(topic,message)
+        def set_value_function(topic,payload):
+            self.set_value(topic,payload)
 
-        self.switch = Switch (callback = callback_function)
+        self.switch = Switch (set_value = set_value_function)
         node.add_property (self.switch)
 
         self.start()
@@ -47,8 +47,8 @@ class Switch_Device(Device_Base):
         else:
             self.switch.value = 'OFF'
 
-    def callback(self,topic,message):
-        print('call back',topic,message)
+    def set_value(self,topic,payload):
+        print('call back',topic,payload)
         
 
 if __name__ == '__main__':

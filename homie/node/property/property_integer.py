@@ -7,8 +7,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Property_Integer(Property_Base):
 
-    def __init__(self, id, name, settable=True, retained=True, qos=1, unit=None, data_type='integer', data_format=None, value=None, callback=None):
-        super().__init__(id,name,settable,retained,qos,unit,'integer',data_format,value,callback)
+    def __init__(self, id, name, settable=True, retained=True, qos=1, unit=None, data_type='integer', data_format=None, value=None, set_value=None):
+        super().__init__(id,name,settable,retained,qos,unit,'integer',data_format,value,set_value)
 
         if data_format:
             range = data_format.split(':')

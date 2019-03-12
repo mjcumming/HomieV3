@@ -33,10 +33,7 @@ class Dimmer_Device(Device_Base):
         node = (Node_Base('dimmer','Dimmer','dimmer'))
         self.add_node (node)
 
-        def callback_function(topic,message):
-            self.callback(topic,message)
-
-        self.dimmer = Dimmer (callback = callback_function)
+        self.dimmer = Dimmer (set_value = lambda topic,payload: self.set_value(topic,payload) )
         node.add_property (self.dimmer)
 
         self.start()
@@ -44,8 +41,8 @@ class Dimmer_Device(Device_Base):
     def update(self,percent):
         self.dimmer.value = percent
 
-    def callback(self,topic,message):
-        print('call back',topic,message)
+    def set_value(self,topic,payload):
+        print('set_value - need to overide',topic,payload)
         
 
 if __name__ == '__main__':
