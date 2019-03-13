@@ -10,6 +10,8 @@ mqtt_settings = {
 }
 
 
+dimmers = []
+
 class My_Dimmer(Device_Dimmer):
 
     def set_value(self,topic,payload):
@@ -18,13 +20,17 @@ class My_Dimmer(Device_Dimmer):
 
 try:
 
-    dimmer = My_Dimmer(name = 'Test Dimmer',mqtt_settings=mqtt_settings)
+    for x in range(200):
+        dimmer = My_Dimmer(name = 'Test Dimmer {}'.format(x),mqtt_settings=mqtt_settings)
+        dimmers.append (dimmer)
     
     while True:
         time.sleep(5)
-        dimmer.update(50)
+        for dimmer in dimmers:
+            dimmer.update(50)
         time.sleep(5)
-        dimmer.update(100)
+        for dimmer in dimmers:
+            dimmer.update(100)
 
 except (KeyboardInterrupt, SystemExit):
     print("Quitting.")        

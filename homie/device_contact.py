@@ -2,7 +2,7 @@
 
 from device_base import Device_Base
 from node.node_base import Node_Base
-from node.property.switch import Switch
+from node.property.property_contact import Property_Contact
 
 
 
@@ -15,16 +15,15 @@ class Device_Contact(Device_Base):
         node = (Node_Base('contact','Contact','contact'))
         self.add_node (node)
 
-
-        self.contact = Contact()
+        self.contact = Property_Contact()
         node.add_property (self.contact)
 
         self.start()
 
     def update(self,open):
-        if on:
-            self.switch.value = 'OPEN'
+        if open:
+            self.contact.value = 'OPEN'
         else:
-            self.switch.value = 'CLOSED'
+            self.contact.value = 'CLOSED'
 
 

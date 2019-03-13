@@ -4,28 +4,13 @@ import logging
 import time
 import somecomfort
 
-from thermostat_device import Thermostat_Device
+from device_thermostat import Device_Thermostat
 
-
-from uuid import getnode as get_mac
-
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-
-
-
-def generate_device_id():
-    return "{:02x}".format(get_mac())
 
 
 mqtt_settings = {
     'MQTT_BROKER' : 'QueenMQTT',
     'MQTT_PORT' : 1883,
-    'MQTT_USERNAME' : None,
-    'MQTT_PASSWORD' : None,
-    'MQTT_KEEPALIVE' : 60,
-    'MQTT_CLIENT_ID' : 'Homie_'+generate_device_id(),
 }
 
 client = somecomfort.SomeComfort('mike@4831.com','Minaki17')
@@ -39,17 +24,12 @@ for l_name, location in client.locations_by_id.items():
 device = client.default_device
 
 
-
 FAN_MODES = ['auto', 'on', 'circulate', 'follow schedule']
 SYSTEM_MODES = ['emheat', 'heat', 'off', 'cool', 'auto', 'auto']
 HOLD_MODES = ['schedule', 'temporary', 'permanent']
 EQUIPMENT_OUTPUT_STATUS = ['off/fan', 'heat', 'cool']
 
-class TCC_Device(Thermostat_Device):
-
-    def __init__(self, device_id='thermostat', name='Thermostat', update_interval=60,  mqtt_settings=mqtt_settings):
-
-        super().__init__ (device_id=device_id, name=name, update_interval=update_interval, mqtt_settings=mqtt_settings)
+class TCC_Device(Device_Thermostat):
 
     def set_heat_setpoint(self,topic,payload):
         print('set_value - need to overide',topic,payload)
@@ -70,11 +50,10 @@ class TCC_Device(Thermostat_Device):
 if __name__ == '__main__':
     try:
 
-        thermostat = TCC_Device(name = device.name)
+        thermostat = TCC_Device(name = device.name,mqtt_settings=mqtt_settings)
         
         while True:
-            time.sleep(5)
-            thermostat.update (device.current_temperature,device.current_humidity)
+            thermostat.update (device.current_temperature,device.current_humidity,device.setpoint_cool,device.setpoint_heat,device.hold_cool,device.system_mode,device.fan_mode)
             print(device.name)
             print(device.is_alive)
 
@@ -102,6 +81,8 @@ if __name__ == '__main__':
             print(device.raw_ui_data)
             print(device.raw_fan_data)
             print(device.raw_dr_data)
+            time.sleep(120)
+            device.refresh()
 
     except (KeyboardInterrupt, SystemExit):
         print("Quitting.")        
