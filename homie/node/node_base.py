@@ -6,11 +6,14 @@ from helpers import validate_id
 
 class Node_Base(object):
 
-    def __init__(self, id, name, type_):
+    def __init__(self, id, name, type_, retain=True, qos=1): # node arrays are not supported
         assert validate_id(id)
         self.id = id
         self.name = name
         self.type = type_
+
+        self.retain = retain
+        self.qos = qos
 
         self.properties = {}
 
@@ -30,11 +33,11 @@ class Node_Base(object):
         property_.parent_publisher = self.parent_publisher
 
     def publish(self,topic,payload,retain,qos):
-        self.parent_publisher (topic,payload)
+        self.parent_publisher (topic,payload,retain,qos)
 
     def publish_attributes(self):
-        self.publish ("/".join((self.topic, "$name")), self.name, True, 1)
-        self.publish ("/".join((self.topic, "$type")), self.type, True, 1)
+        self.publish ("/".join((self.topic, "$name")), self.name, self.retain, self.qos)
+        self.publish ("/".join((self.topic, "$type")), self.type, self.retain, self.qos)
 
         self.publish_properties()
         

@@ -1,38 +1,20 @@
 #!/usr/bin/env python
 
-import sys
-import time
-from network_information import Network_Information
-from uuid import getnode as get_mac
-
 from device_base import Device_Base
-
 from node.node_base import Node_Base
 
-from node.property.setpoint import Setpoint
-from node.property.temperature import Temperature
-from node.property.humidity import Humidity
+from node.property.property_setpoint import Property_Setpoint
+from node.property.property_temperature import Property_Temperature
+from node.property.property_humidity import Property_Humidity
 from node.property.property_enum import Property_Enum
 from node.property.property_string import Property_String
-
-
-def generate_device_id():
-    return "{:02x}".format(get_mac())
-
-mqtt_settings = {
-    'MQTT_BROKER' : 'QueenMQTT',
-    'MQTT_PORT' : 1883,
-    'MQTT_USERNAME' : None,
-    'MQTT_PASSWORD' : None,
-    'MQTT_KEEPALIVE' : 60,
-    'MQTT_CLIENT_ID' : 'Homie_'+generate_device_id(),
-}
 
 
 FAN_MODES = ['auto', 'on', 'circulate', 'follow schedule']
 SYSTEM_MODES = ['emheat', 'heat', 'off', 'cool', 'auto', 'auto']
 HOLD_MODES = ['schedule', 'temporary', 'permanent']
 EQUIPMENT_OUTPUT_STATUS = ['off/fan', 'heat', 'cool']
+
 
 class Thermostat_Device(Device_Base):
 

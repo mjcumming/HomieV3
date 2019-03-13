@@ -1,6 +1,6 @@
 from .property_float import Property_Float
 
-class Temperature(Property_Float):
+class Property_Temperature(Property_Float):
 
     def __init__(self, id='temperature', name = 'Temperature', settable = False, retained = True, qos=1, unit = None, data_type= None, data_format = None, value = None, set_value=None):
         

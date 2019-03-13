@@ -30,11 +30,13 @@ class Property_Base(object):
         self.retained = retained
         self.qos = qos
         self.unit = unit
+        
         assert data_type in data_types
         self.data_type = data_type
         self.data_format = data_format
+        
         self.settable = settable
-        if settable:
+        if settable: # must provide a function to call to set the value
             assert(set_value)
             self.set_value = set_value
 
@@ -42,6 +44,8 @@ class Property_Base(object):
 
         if value:
             self._value = value
+        else:
+            self._value = False 
 
     @property
     def value(self):
@@ -64,26 +68,29 @@ class Property_Base(object):
         self.parent_publisher (topic,payload,retain,qos)
 
     def publish_attributes(self):
-        self.publish ("/".join((self.topic, "$name")), self.name, True, 1)
-        self.publish ("/".join((self.topic, "$settable")), self.settable, True, 1)
-        self.publish ("/".join((self.topic, "$retained")), self.retained, True, 1)
+        self.publish ("/".join((self.topic, "$name")), self.name, True, self.qos)
+        self.publish ("/".join((self.topic, "$settable")), self.settable, True, self.qos)
+        self.publish ("/".join((self.topic, "$retained")), self.retained, True, self.qos)
         if self.unit:
-            self.publish ("/".join((self.topic, "$unit")), self.unit, True, 1)
+            self.publish ("/".join((self.topic, "$unit")), self.unit, True, self.qos)
         if self.data_type:
-            self.publish ("/".join((self.topic, "$datatype")), self.data_type, True, 1)
+            self.publish ("/".join((self.topic, "$datatype")), self.data_type, True, self.qos)
         if self.data_format:
-            self.publish ("/".join((self.topic, "$format")), self.data_format, True, 1)
+            self.publish ("/".join((self.topic, "$format")), self.data_format, True, self.qos)
 
-    def get_subscriptions(self):
+        if self.value: # publish value if known, be setting it
+            self.value = self.value
+
+    def get_subscriptions(self): # subscribe to the set topic
         if self.settable:
             return {"/".join((self.topic, "set")) : self.message_handler}
         else:   
             return {}
 
     def message_handler(self,topic,payload):
-        logger.info ('MQTT Property Message:  Topic {}, Payload {}'.format(topic,payload))
+        logger.debug ('MQTT Property Message:  Topic {}, Payload {}'.format(topic,payload))
         self.process_message(topic,payload)
 
-    def process_message(self,topic,payload):
+    def process_message(self,topic,payload): #override as needed
         self.set_value(topic,payload)
 
