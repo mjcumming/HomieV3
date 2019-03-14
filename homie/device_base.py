@@ -4,16 +4,12 @@ import logging
 import atexit
 import sys
 import time
-#import binascii
+
 import paho.mqtt.client as mqtt_client
 from uuid import getnode as get_mac
 from network_information import Network_Information
 from helpers import validate_id
 from repeating_timer import Repeating_Timer
-
-#from node.node_base import Node_Base
-#from node.property.property_base import Property_Base
-#from node.property.switch import Switch
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -150,6 +146,7 @@ class Device_Base(object):
     def publish_nodes(self):
         nodes = ",".join(self.nodes.keys())
         self.publish("/".join((self.device_topic, "$nodes")),nodes)
+        
         for _,node in self.nodes.items():
             node.publish_attributes()
 

@@ -22,12 +22,12 @@ class Property_Float(Property_Base):
         try: 
             value = float(payload)
             valid = True
-
-            if self.value is not None and value < self.low_value:
+ 
+            if self.low_value is not None and value < self.low_value:
                 valid = False
             if self.high_value is not None and value > self.high_value:
                 valid = False
-
+ 
             if valid:
                 super().message_handler(topic,payload)
             else:

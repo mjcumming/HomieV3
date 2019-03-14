@@ -60,9 +60,3 @@ class Network_Information(object):
             mac_addr = link[0].get('addr')
         return mac_addr
 
-
-if __name__ == "__main__":
-    ni = Network_Information()
-    ip = ni.get_local_ip("QueenMQTT",1883)
-    print(ip)
-    print(ni.get_local_mac_for_ip(ip))    

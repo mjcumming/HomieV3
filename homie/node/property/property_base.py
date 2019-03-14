@@ -78,7 +78,7 @@ class Property_Base(object):
         if self.data_format:
             self.publish ("/".join((self.topic, "$format")), self.data_format, True, self.qos)
 
-        if self.value: # publish value if known, be setting it
+        if self.value: # publish value if known, by setting it
             self.value = self.value
 
     def get_subscriptions(self): # subscribe to the set topic
