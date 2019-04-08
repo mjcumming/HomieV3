@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from device_base import Device_Base
-from node.node_base import Node_Base
-from node.property.property_contact import Property_Contact
+from homie.device_base import Device_Base
+from homie.node.node_base import Node_Base
+from homie.node.property.property_contact import Property_Contact
 
 
 

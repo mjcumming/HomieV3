@@ -2,7 +2,7 @@
 
 import time
 
-from device_switch import Device_Switch
+from homie.device_switch import Device_Switch
 
 mqtt_settings = {
     'MQTT_BROKER' : 'QueenMQTT',
@@ -27,5 +27,6 @@ try:
         switch.update(False)
 
 except (KeyboardInterrupt, SystemExit):
-    print("Quitting.")        
-    quit()
+    print("Quitting.")    
+    switch = None    
+

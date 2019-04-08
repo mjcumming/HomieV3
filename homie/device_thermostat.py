@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from device_base import Device_Base
-from node.node_base import Node_Base
+from homie.device_base import Device_Base
+from homie.node.node_base import Node_Base
 
-from node.property.property_setpoint import Property_Setpoint
-from node.property.property_temperature import Property_Temperature
-from node.property.property_humidity import Property_Humidity
-from node.property.property_enum import Property_Enum
-from node.property.property_string import Property_String
+from homie.node.property.property_setpoint import Property_Setpoint
+from homie.node.property.property_temperature import Property_Temperature
+from homie.node.property.property_humidity import Property_Humidity
+from homie.node.property.property_enum import Property_Enum
+from homie.node.property.property_string import Property_String
 
 
 FAN_MODES = ['auto', 'on', 'circulate', 'follow schedule']

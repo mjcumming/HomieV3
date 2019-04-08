@@ -7,13 +7,12 @@ import time
 
 import paho.mqtt.client as mqtt_client
 from uuid import getnode as get_mac
-from network_information import Network_Information
-from helpers import validate_id
-from repeating_timer import Repeating_Timer
+from homie.support.network_information import Network_Information
+from homie.support.helpers import validate_id
+from homie.support.repeating_timer import Repeating_Timer
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-logger.debug("Initializing MQTT")
 
 mqtt_logger = logging.getLogger(__name__)
 mqtt_logger.setLevel('INFO')
@@ -22,12 +21,13 @@ network_info = Network_Information()
 
 instance_count = 0 # used to track the number of device instances to allow for changing the default device id
 
-device_states = [
+DEVICE_STATES = [
     "init", 
     "ready", 
     "disconnected", 
     "sleeping", 
     "alert",
+    "lost",
 ]
 
 MQTT_SETTINGS = {
@@ -53,7 +53,7 @@ HOMIE_SETTINGS = {
 
 class Device_Base(object):
 
-    def __init__(self, device_id=None, name=None, homie_settings=None, mqtt_settings={}):
+    def __init__(self, device_id=None, name=None, homie_settings={}, mqtt_settings={}):
         if device_id is None:
             device_id=self.generate_device_id()
         assert validate_id(device_id), device_id
@@ -62,8 +62,6 @@ class Device_Base(object):
         assert name
         self.name = name
 
-        if homie_settings is None:
-            homie_settings = {}
         self.homie_settings = self._homie_validate_settings (homie_settings)
 
         self.mqtt_settings = self._mqtt_validate_settings (mqtt_settings)
@@ -72,9 +70,9 @@ class Device_Base(object):
 
         self.mqtt_client= None
         self.mqtt_connected = False
+        self.mqtt_subscription_handlers = {}
 
         self.nodes = {}
-        self.subscription_handlers = {}
 
         self.device_topic = "/".join((self.homie_settings ['topic'], self.device_id))
     
@@ -93,18 +91,13 @@ class Device_Base(object):
 
         self.timer = Repeating_Timer(self.homie_settings ['update_interval'],update_status) #update the state topic 
 
-        def kill_timer():# ************ does not work....
-            self.timer.stop()
-        
-        atexit.register(kill_timer)
-
     @property
     def state(self):
         return self._state
 
     @state.setter
     def state(self, state):
-        if state in device_states:
+        if state in DEVICE_STATES:
             self._state = state
             self.publish( "/".join((self.device_topic, "$state")),self._state)
         else:
@@ -127,7 +120,7 @@ class Device_Base(object):
         self.publish("/".join((self.device_topic, "$stats/uptime")),time.time()-self.start_time)
 
     def add_subscription(self,topic,handler): #subscription list to the required MQTT topics, used by properties to catch set topics
-        self.subscription_handlers [topic] = handler
+        self.mqtt_subscription_handlers [topic] = handler
         self.mqtt_client.subscribe (topic,0)
         logging.info ('MQTT subscribed to {}'.format(topic))
 
@@ -146,7 +139,7 @@ class Device_Base(object):
     def publish_nodes(self):
         nodes = ",".join(self.nodes.keys())
         self.publish("/".join((self.device_topic, "$nodes")),nodes)
-        
+
         for _,node in self.nodes.items():
             node.publish_attributes()
 
@@ -161,12 +154,15 @@ class Device_Base(object):
             logger.warning('not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
 
     def _homie_validate_settings(self,settings):
-        for setting,value in HOMIE_SETTINGS.items():
-            if not setting in settings:
-                settings [setting] = HOMIE_SETTINGS [setting]
- 
-        if 'MQTT_CLIENT_ID' not in settings:
-            settings ['MQTT_CLIENT_ID'] = 'Homie_'+self.device_id
+        if settings is not None:
+            for setting,value in HOMIE_SETTINGS.items():
+                if not setting in settings:
+                    settings [setting] = HOMIE_SETTINGS [setting]
+    
+            if 'MQTT_CLIENT_ID' not in settings:
+                settings ['MQTT_CLIENT_ID'] = 'Homie_'+self.device_id
+        else:
+            settings = HOMIE_SETTINGS
 
         return settings
 
@@ -225,8 +221,8 @@ class Device_Base(object):
         payload = msg.payload.decode("utf-8")
         logging.info ('MQTT Message: Topic {}, Payload {}'.format(topic,payload))
 
-        if topic in self.subscription_handlers:
-            self.subscription_handlers [topic] (topic, payload)        
+        if topic in self.mqtt_subscription_handlers:
+            self.mqtt_subscription_handlers [topic] (topic, payload)        
         else:
             logger.warning ('Unknown MQTT Message: Topic {}, Payload {}'.format(topic,payload))
     
@@ -239,3 +235,5 @@ class Device_Base(object):
         self.mqtt_connected = False
 
 
+    def __del__(self):
+        self.timer.stop()        
