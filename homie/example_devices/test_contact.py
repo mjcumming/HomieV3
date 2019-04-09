@@ -2,7 +2,7 @@
 
 import time
 
-from device_contact import Device_Contact
+from homie.device_contact import Device_Contact
 
 mqtt_settings = {
     'MQTT_BROKER' : 'QueenMQTT',
@@ -16,9 +16,9 @@ try:
     
     while True:
         time.sleep(5)
-        contact.update(True)
+        contact.update_contact('OPEN')
         time.sleep(5)
-        contact.update(False)
+        contact.update_contact('CLOSED')
 
 except (KeyboardInterrupt, SystemExit):
     print("Quitting.")        

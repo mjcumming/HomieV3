@@ -8,9 +8,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Property_Color(Property_Base):
 
-    def __init__(self, id, name, settable=True, retained=True, qos=1, unit=None, data_type='color', data_format=None, value=None, set_value=None):
+    def __init__(self, node, id, name, settable=True, retained=True, qos=1, unit=None, data_type='color', data_format=None, value=None, set_value=None):
 
-        super().__init__(id,name,settable,retained,qos,unit,'color',data_format,value,set_value)
+        super().__init__(node,id,name,settable,retained,qos,unit,'color',data_format,value,set_value)
 
         # check valid data format provided
 

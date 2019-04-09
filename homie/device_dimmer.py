@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 from homie.device_base import Device_Base
-from homie.node.node_base import Node_Base
-from homie.node.property.property_dimmer import Property_Dimmer
+from homie.node.node_dimmer import Node_Dimmer
+import logging
 
+logger = logging.getLogger(__name__)
 
 class Device_Dimmer(Device_Base):
 
@@ -11,17 +12,14 @@ class Device_Dimmer(Device_Base):
 
         super().__init__ (device_id, name, homie_settings, mqtt_settings)
 
-        node = (Node_Base('dimmer','Dimmer','dimmer'))
-        self.add_node (node)
-
-        self.dimmer = Property_Dimmer (set_value = lambda topic,payload: self.set_value(topic,payload) )
-        node.add_property (self.dimmer)
+        self.add_node(Node_Dimmer(self,id='dimmer',set_dimmer=lambda percent: self.set_dimmer(percent)))
 
         self.start()
 
-    def update(self,percent):
-        self.dimmer.value = percent
+    def update_dimmer(self,percent): #sends updates to clients
+        self.get_node('dimmer').update_dimmer(percent)
+        logging.info ('Dimmer Update {}'.format(percent))
 
-    def set_value(self,topic,payload):
-        print('set_value - need to overide',topic,payload)
-        
+    def set_dimmer(self,percent):#received commands from clients
+        logging.info ('Dimmer Set {}'.format(percent))
+        print('must override set dimmer',percent)

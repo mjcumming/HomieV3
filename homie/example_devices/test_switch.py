@@ -12,7 +12,7 @@ mqtt_settings = {
 
 class My_Switch(Device_Switch):
 
-    def set_value(self,topic,payload):
+    def set_switch(self,topic,payload):
         print('Receive MQTT message to set the switch to {}. Must replace this method'.format(payload))
         
 
@@ -22,9 +22,9 @@ try:
     
     while True:
         time.sleep(5)
-        switch.update(True)
+        switch.update_switch('ON')
         time.sleep(5)
-        switch.update(False)
+        switch.update_switch('OFF')
 
 except (KeyboardInterrupt, SystemExit):
     print("Quitting.")    

@@ -74,7 +74,7 @@ class Device_Base(object):
 
         self.nodes = {}
 
-        self.device_topic = "/".join((self.homie_settings ['topic'], self.device_id))
+        self.topic = "/".join((self.homie_settings ['topic'], self.device_id))
     
     def generate_device_id(self):
         global instance_count
@@ -99,7 +99,7 @@ class Device_Base(object):
     def state(self, state):
         if state in DEVICE_STATES:
             self._state = state
-            self.publish( "/".join((self.device_topic, "$state")),self._state)
+            self.publish( "/".join((self.topic, "$state")),self._state)
         else:
             logging.warning ('invalid device state {}'.format(state))
 
@@ -107,17 +107,17 @@ class Device_Base(object):
         ip = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
         mac = network_info.get_local_mac_for_ip(ip)
 
-        self.publish("/".join((self.device_topic, "$homie")),self.homie_settings ['version'])
-        self.publish("/".join((self.device_topic, "$name")),self.name)
-        self.publish("/".join((self.device_topic, "$localip")),ip)
-        self.publish("/".join((self.device_topic, "$mac")),mac)
-        self.publish("/".join((self.device_topic, "$fw/name")),self.homie_settings ['fw_name'])
-        self.publish("/".join((self.device_topic, "$fw/version")),self.homie_settings ['fw_version'])
-        self.publish("/".join((self.device_topic, "$implmentation")),self.homie_settings ['implementation'])
-        self.publish("/".join((self.device_topic, "$stats/interval")),self.homie_settings ['update_interval'])
+        self.publish("/".join((self.topic, "$homie")),self.homie_settings ['version'])
+        self.publish("/".join((self.topic, "$name")),self.name)
+        self.publish("/".join((self.topic, "$localip")),ip)
+        self.publish("/".join((self.topic, "$mac")),mac)
+        self.publish("/".join((self.topic, "$fw/name")),self.homie_settings ['fw_name'])
+        self.publish("/".join((self.topic, "$fw/version")),self.homie_settings ['fw_version'])
+        self.publish("/".join((self.topic, "$implmentation")),self.homie_settings ['implementation'])
+        self.publish("/".join((self.topic, "$stats/interval")),self.homie_settings ['update_interval'])
 
     def publish_statistics(self):
-        self.publish("/".join((self.device_topic, "$stats/uptime")),time.time()-self.start_time)
+        self.publish("/".join((self.topic, "$stats/uptime")),time.time()-self.start_time)
 
     def add_subscription(self,topic,handler): #subscription list to the required MQTT topics, used by properties to catch set topics
         self.mqtt_subscription_handlers [topic] = handler
@@ -125,7 +125,7 @@ class Device_Base(object):
         logging.info ('MQTT subscribed to {}'.format(topic))
 
     def subscribe_topics(self):
-        self.add_subscription ("/".join((self.device_topic, "$broadcast/#")),self.broadcast_handler) #get the broadcast events
+        self.add_subscription ("/".join((self.topic, "$broadcast/#")),self.broadcast_handler) #get the broadcast events
 
         for _,node in self.nodes.items():
             for topic,handler in node.get_subscriptions().items():
@@ -133,12 +133,13 @@ class Device_Base(object):
   
     def add_node(self,node):
         self.nodes [node.id] = node
-        node.topic = self.device_topic
-        node.parent_publisher = self.publish
+
+    def get_node(self,node_id):
+        return self.nodes [node_id]
 
     def publish_nodes(self):
         nodes = ",".join(self.nodes.keys())
-        self.publish("/".join((self.device_topic, "$nodes")),nodes)
+        self.publish("/".join((self.topic, "$nodes")),nodes)
 
         for _,node in self.nodes.items():
             node.publish_attributes()
@@ -184,7 +185,7 @@ class Device_Base(object):
         self.mqtt_client.enable_logger(mqtt_logger)
         
         self.mqtt_client.will_set(
-            "/".join((self.device_topic, "$state")), "lost", retain=True, qos=1
+            "/".join((self.topic, "$state")), "lost", retain=True, qos=1
         )
 
         if self.mqtt_settings ['MQTT_USERNAME']:

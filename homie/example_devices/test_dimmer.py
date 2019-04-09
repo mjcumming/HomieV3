@@ -22,9 +22,9 @@ try:
     
     while True:
         time.sleep(5)
-        dimmer.update(50)
+        dimmer.update_dimmer(50)
         time.sleep(5)
-        dimmer.update(100)
+        dimmer.update_dimmer(100)
 
 except (KeyboardInterrupt, SystemExit):
     print("Quitting.")        

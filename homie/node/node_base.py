@@ -6,18 +6,20 @@ from homie.support.helpers import validate_id
 
 class Node_Base(object):
 
-    def __init__(self, id, name, type_, retain=True, qos=1): # node arrays are not supported
+    def __init__(self, device, id, name, type_, retain=True, qos=1): # node arrays are not supported
         assert validate_id(id)
+        assert device
         self.id = id
         self.name = name
         self.type = type_
+        self.device = device
 
         self.retain = retain
         self.qos = qos
 
         self.properties = {}
 
-        self.parent_publisher = None
+        self.topic = self.device.topic
 
     @property
     def topic(self):
@@ -29,11 +31,12 @@ class Node_Base(object):
 
     def add_property(self, property_):
         self.properties [property_.id] = property_
-        property_.topic = self.topic
-        property_.parent_publisher = self.parent_publisher
+
+    def get_property(self, property_id):
+        return self.properties [property_id]
 
     def publish(self,topic,payload,retain,qos):
-        self.parent_publisher (topic,payload,retain,qos)
+        self.device.publish (topic,payload,retain,qos)
 
     def publish_attributes(self):
         self.publish ("/".join((self.topic, "$name")), self.name, self.retain, self.qos)

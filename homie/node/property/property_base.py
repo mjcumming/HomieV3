@@ -10,7 +10,7 @@ def validate_id(id):
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+
 
 data_types = [
     'integer',
@@ -23,13 +23,18 @@ data_types = [
 
 class Property_Base(object):
 
-    def __init__(self, id, name=None, settable=False, retained=True, qos=1, unit=None, data_type=None, data_format=None, value=None, set_value=None):
+    def __init__(self, node, id, name=None, settable=False, retained=True, qos=1, unit=None, data_type=None, data_format=None, value=None, set_value=None):
         assert validate_id (id), id
+        assert node
+
         self.id = id
         self.name = name
         self.retained = retained
         self.qos = qos
         self.unit = unit
+        self.node = node
+
+        self.topic = node.topic
         
         assert data_type in data_types
         self.data_type = data_type
@@ -39,8 +44,6 @@ class Property_Base(object):
         if settable: # must provide a function to call to set the value
             assert(set_value)
             self.set_value = set_value
-
-        self.parent_publisher = None
 
         if value:
             self._value = value
@@ -53,8 +56,15 @@ class Property_Base(object):
 
     @value.setter
     def value(self, value):
-        self._value = value
-        self.publish (self.topic,value,self.retained,self.qos)
+        if self.validate_value(value):
+            self._value = value
+            self.publish (self.topic,value,self.retained,self.qos)
+            logger.debug ('Value set to:   {}'.format(value))
+        else:
+            logger.warn ('Invalid Value:   {}'.format(value))
+
+    def validate_value(self,value):
+        return True # override as needed
     
     @property
     def topic(self):
@@ -65,7 +75,7 @@ class Property_Base(object):
         self._topic =  "/".join([parent_topic,self.id])
 
     def publish(self,topic,payload, retain, qos):
-        self.parent_publisher (topic,payload,retain,qos)
+        self.node.publish (topic,payload,retain,qos)
 
     def publish_attributes(self):
         self.publish ("/".join((self.topic, "$name")), self.name, True, self.qos)
