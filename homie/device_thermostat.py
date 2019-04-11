@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# *** not ready for use
+
 from homie.device_base import Device_Base
 from homie.node.node_base import Node_Base
 

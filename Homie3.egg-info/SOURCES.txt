@@ -1,19 +1,12 @@
 README.md
+setup.py
 Homie3.egg-info/PKG-INFO
 Homie3.egg-info/SOURCES.txt
 Homie3.egg-info/dependency_links.txt
-Homie3.egg-info/requires.txt
 Homie3.egg-info/top_level.txt
+homie/__init__.py
 homie/device_base.py
 homie/device_contact.py
 homie/device_dimmer.py
 homie/device_switch.py
 homie/device_thermostat.py
-homie/helpers.py
-homie/network_information.py
-homie/repeating_timer.py
-homie/switch_stress_test.py
-homie/tcc thermotstat.py
-homie/test_contact.py
-homie/test_dimmer.py
-homie/test_switch.py

@@ -12,7 +12,7 @@ mqtt_settings = {
 
 class My_Dimmer(Device_Dimmer):
 
-    def set_value(self,topic,payload):
+    def set_dimmer(self,topic,payload):
         print('Received MQTT message to set the dimmer to {}. Must replace this method'.format(payload))
         
 
