@@ -30,7 +30,7 @@ try:
         time.sleep(5)
         state.update_state('B')
         time.sleep(5)
-        state.update_state('C')
+        state.update_state('G')
 
 except (KeyboardInterrupt, SystemExit):
     print("Quitting.")        
