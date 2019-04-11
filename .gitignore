@@ -4,6 +4,6 @@
 __pycache__
 build/*
 dist/*
-test/*
+homie/test/*
 homie.egg-info/*
 MANIFEST
