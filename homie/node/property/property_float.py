@@ -19,7 +19,7 @@ class Property_Float(Property_Base):
     def validate_value(self, value):
         valid = True
 
-        if self.value is not None and value < self.low_value:
+        if self.low_value is not None and value < self.low_value:
             valid = False
         if self.high_value is not None and value > self.high_value:
             valid = False

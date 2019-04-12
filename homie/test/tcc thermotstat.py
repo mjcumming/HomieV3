@@ -4,9 +4,11 @@ import logging
 import time
 import somecomfort
 
-from device_thermostat import Device_Thermostat
+from homie.device_thermostat import Device_Thermostat
 
-
+'''{'DispTemperature': 68, 'HeatSetpoint': 68, 'CoolSetpoint': 79, 'DisplayUnits': 'F', 'StatusHeat': 2, 'StatusCool': 2, 'HoldUntilCapable': True, 'ScheduleCapable': True, 'VacationHold': 0, 'DualSetpointStatus': False, 'HeatNextPeriod': 32, 'CoolNextPeriod': 32, 'HeatLowerSetptLimit': 40, 'HeatUpperSetptLimit': 90, 'CoolLowerSetptLimit': 50, 'CoolUpperSetptLimit': 99, 'ScheduleHeatSp': 70, 'ScheduleCoolSp': 78, 'SwitchAutoAllowed': False, 'SwitchCoolAllowed': True, 'SwitchOffAllowed': True, 'SwitchHeatAllowed': True, 'SwitchEmergencyHeatAllowed': False, 'SystemSwitchPosition': 1, 'Deadband': 0, 'IndoorHumidity': 32, 'DeviceID': 3368967, 'Commercial': False, 'DispTemperatureAvailable': True, 'IndoorHumiditySensorAvailable': True, 'IndoorHumiditySensorNotFault': True, 'VacationHoldUntilTime': 0, 'TemporaryHoldUntilTime': 0, 'IsInVacationHoldMode': False, 'VacationHoldCancelable': True, 'SetpointChangeAllowed': True, 'OutdoorTemperature': 33, 'OutdoorHumidity': 95, 'OutdoorHumidityAvailable': True, 'OutdoorTemperatureAvailable': True, 'DispTemperatureStatus': 0, 'IndoorHumidStatus': 0, 'OutdoorTempStatus': 0, 'OutdoorHumidStatus': 0, 'OutdoorTemperatureSensorNotFault': True, 'OutdoorHumiditySensorNotFault': True, 'CurrentSetpointStatus': 2, 'EquipmentOutputStatus': 0}
+{'fanMode': 0, 'fanModeAutoAllowed': True, 'fanModeOnAllowed': True, 'fanModeCirculateAllowed': True, 'fanModeFollowScheduleAllowed': False, 'fanIsRunning': False}
+{'CoolSetpLimit': None, 'HeatSetpLimit': None, 'Phase': -1, 'OptOutable': False, 'DeltaCoolSP': None, 'DeltaHeatSP': None, 'Load': None}'''
 
 mqtt_settings = {
     'MQTT_BROKER' : 'QueenMQTT',

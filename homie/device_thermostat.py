@@ -20,39 +20,39 @@ EQUIPMENT_OUTPUT_STATUS = ['off/fan', 'heat', 'cool']
 
 class Device_Thermostat(Device_Base):
 
-    def __init__(self, device_id=None, name=None, homie_settings=None, mqtt_settings=None):
+    def __init__(self, device_id=None, name=None, homie_settings=None, mqtt_settings=None, unit='F'):
 
         super().__init__ (device_id, name, homie_settings, mqtt_settings)
 
-        node = (Node_Base('controls','Controls','controls'))
+        node = (Node_Base(device,'controls','Controls','controls'))
         self.add_node (node)
 
-        self.heat_setpoint = Property_Setpoint (id='heatsetpoint',name='Heat Setpoint',set_value = lambda topic,payload: self.set_heat_setpoint(topic,payload) )
+        self.heat_setpoint = Property_Setpoint (node,id='heatsetpoint',name='Heat Setpoint',set_value = lambda value: self.set_heat_setpoint(value) )
         node.add_property (self.heat_setpoint)
 
-        self.cool_setpoint = Property_Setpoint (id='coolsetpoint',name='Cool Setpoint',set_value = lambda topic,payload: self.set_cool_setpoint(topic,payload) )
+        self.cool_setpoint = Property_Setpoint (node,id='coolsetpoint',name='Cool Setpoint',set_value = lambda value: self.set_cool_setpoint(value) )
         node.add_property (self.cool_setpoint)
 
-        self.system_mode = Property_Enum (id='systemmode',name='System Mode',data_format=','.join(SYSTEM_MODES),set_value = lambda topic,payload: self.set_system_mode(topic,payload) )
+        self.system_mode = Property_Enum (node,id='systemmode',name='System Mode',data_format=','.join(SYSTEM_MODES),set_value = lambda value: self.set_system_mode(value) )
         node.add_property (self.system_mode)
 
-        self.fan_mode = Property_Enum (id='fanmode',name='Fan Mode',data_format=','.join(FAN_MODES),set_value = lambda topic,payload: self.set_fan_mode(topic,payload) )
+        self.fan_mode = Property_Enum (node,id='fanmode',name='Fan Mode',data_format=','.join(FAN_MODES),set_value = lambda value: self.set_fan_mode(value) )
         node.add_property (self.fan_mode)
 
-        self.hold_mode = Property_Enum (id='holdmode',name='Hold Mode',data_format=','.join(HOLD_MODES),set_value = lambda topic,payload: self.set_hold_mode(topic,payload) )
+        self.hold_mode = Property_Enum (node,id='holdmode',name='Hold Mode',data_format=','.join(HOLD_MODES),set_value = lambda value: self.set_hold_mode(value) )
         node.add_property (self.hold_mode)
 
-        node = (Node_Base('status','Status','status'))
+        node = (Node_Base(device,'status','Status','status'))
         self.add_node (node)
 
-        self.temperture = Property_Temperature ()
-        node.add_property (self.temperture)
+        self.temperture = Property_Temperature (node,unit=unit)
+        node.add_property (node,self.temperture)
 
-        self.humidity = Property_Humidity ()
-        node.add_property (self.humidity)
+        self.humidity = Property_Humidity (node)
+        node.add_property (node,self.humidity)
 
-        self.system_status = Property_String (id='systemstatus',name='System Status',)
-        node.add_property (self.system_status)
+        self.system_status = Property_String (node,id='systemstatus',name='System Status',)
+        node.add_property (node,self.system_status)
 
         self.start()
 
@@ -65,18 +65,18 @@ class Device_Thermostat(Device_Base):
         self.heat_setpoint = heat_setpoint
         self.cool_setpoint = cool_setpoint
 
-    def set_heat_setpoint(self,topic,payload):
-        print('set_value - need to overide',topic,payload)
+    def set_heat_setpoint(self,value):
+        print('set_value - need to overide',value)
         
-    def set_cool_setpoint(self,topic,payload):
-        print('set_value - need to overide',topic,payload)
+    def set_cool_setpoint(self,value):
+        print('set_value - need to overide',value)
         
-    def set_system_mode(self,topic,payload):
-        print('set_value - need to overide',topic,payload)
+    def set_system_mode(self,value):
+        print('set_value - need to overide',value)
         
-    def set_fan_mode(self,topic,payload):
-        print('set_value - need to overide',topic,payload)
+    def set_fan_mode(self,value):
+        print('set_value - need to overide',value)
         
-    def set_hold_mode(self,topic,payload):
-        print('set_value - need to overide',topic,payload)
+    def set_hold_mode(self,value):
+        print('set_value - need to overide',value)
         
