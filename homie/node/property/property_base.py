@@ -65,6 +65,9 @@ class Property_Base(object):
 
     def validate_value(self,value):
         return True # override as needed
+
+    def get_value_from_payload(self,payload):
+        return payload
     
     @property
     def topic(self):
@@ -93,14 +96,24 @@ class Property_Base(object):
 
     def get_subscriptions(self): # subscribe to the set topic
         if self.settable:
-            return {"/".join((self.topic, "set")) : self.message_handler}
+            return {"/".join((self.topic, "set")) : self.set_message_handler}
         else:   
             return {}
 
-    def message_handler(self,topic,payload):
+    def set_message_handler(self,topic,payload):
         logger.debug ('MQTT Property Message:  Topic {}, Payload {}'.format(topic,payload))
-        self.process_message(topic,payload)
+        self.process_set_message(topic,payload)
 
-    def process_message(self,topic,payload): #override as needed
-        self.set_value(topic,payload)
+    def process_set_message(self,topic,payload): #override as needed
+        value = self.get_value_from_payload(payload)
+
+        if value is not None:
+            if self.validate_value(value):
+                self.value = value
+                self.set_value(value) # call function to actually change the value
+            else:
+                logger.warning ('Payload float value out of range for property for message {}, payload is {}, low value {}. high value {}'.format(topic,payload,self.low_value,self.high_value))
+        else:
+            logger.warning ('Unable to convert payload for property message {}, payload is {}'.format(topic,payload))
+
 

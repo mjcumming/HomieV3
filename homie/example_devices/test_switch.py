@@ -13,7 +13,8 @@ mqtt_settings = {
 class My_Switch(Device_Switch):
 
     def set_switch(self,onoff):
-        print('Receive MQTT message to set the switch to {}. Must replace this method'.format(onoff))
+        print('Received MQTT message to set the switch to {}. Must replace this method'.format(onoff))
+        self.update_switch(onoff)
         
 
 try:

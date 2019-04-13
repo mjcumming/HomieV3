@@ -25,14 +25,10 @@ class Property_Float(Property_Base):
             valid = False
 
         return valid
-
-    def message_handler(self,topic,payload):
-        try: 
-            value = float(payload)
-            if self.validate_value(value):
-                super().message_handler(topic,payload)
-            else:
-                logger.warning ('Payload float value out of range for property for message {}, payload is {}, low value {}. high value {}'.format(topic,payload,self.low_value,self.high_value))
-
+    
+    def get_value_from_payload(self,payload):
+        try:
+            return float(payload)
         except:
-            logger.warning ('Unable to convert payload to float property message {}, payload is {}'.format(topic,payload))
+            return None
+    

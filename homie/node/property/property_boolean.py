@@ -9,10 +9,12 @@ class Property_Boolean(Property_Base):
         super().__init__(node,id,name,settable,retained,qos,unit,'boolean',data_format,value,set_value)
 
     def validate_value(self, value):
-        return payload == 'true' or payload == 'false':
-
-    def message_handler(self,topic,payload):
-        if self.validate_value(payload):
-            super().message_handler(topic,payload)
+        return True # tests below validate
+    
+    def get_value_from_payload(self,payload):
+        if payload == 'true':
+            return True 
+        elif payload == 'false':
+            return False
         else:
-            logger.warning ('Payload boolean value invalid for property for message {}, payload is {}'.format(topic,payload))
+            return None

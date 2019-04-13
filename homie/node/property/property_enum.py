@@ -14,10 +14,3 @@ class Property_Enum(Property_Base):
     def validate_value(self, value):
         return value in self.enum_list
 
-    def message_handler(self,topic,payload):
-        if self.validate_value(payload):
-            super().message_handler(topic,payload)
-        else:
-            logger.warning ('Invalid payload for enum property message {}, payload is {}'.format(topic,payload))
-
- 
