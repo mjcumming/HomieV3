@@ -112,8 +112,8 @@ class Property_Base(object):
                 self.value = value
                 self.set_value(value) # call function to actually change the value
             else:
-                logger.warning ('Payload float value out of range for property for message {}, payload is {}, low value {}. high value {}'.format(topic,payload,self.low_value,self.high_value))
+                logger.warning ('Payload value not valid for property for topic {}, payload is {}'.format(topic,payload))
         else:
-            logger.warning ('Unable to convert payload for property message {}, payload is {}'.format(topic,payload))
+            logger.warning ('Unable to convert payload for property topic {}, payload is {}'.format(topic,payload))
 
 

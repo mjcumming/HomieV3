@@ -91,6 +91,9 @@ class Device_Base(object):
 
         self.timer = Repeating_Timer(self.homie_settings ['update_interval'],update_status) #update the state topic 
 
+        if self.state == 'init':
+            self.state == 'ready'
+
     @property
     def state(self):
         return self._state

@@ -22,13 +22,13 @@ if __name__ == '__main__':
             print('Location %s:' % l_name)
             for key, device in location.devices_by_id.items():
                 print('  Device %s: %s' % (key, device.name))
-                thermostat = Device_Honeywell_Thermostat(name = device.name,mqtt_settings=mqtt_settings,tcc_device=device)
+                thermostat = Device_Honeywell_Thermostat(device_id=str(key),name = device.name,mqtt_settings=mqtt_settings,tcc_device=device)
                 thermostats [key] = thermostat
-                
            
         while True:
             time.sleep(120)
-            thermostat.update ()
+            for key,thermostat in thermostats.items():
+                thermostat.update ()
 
 
     except (KeyboardInterrupt, SystemExit):

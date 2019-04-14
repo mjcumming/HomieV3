@@ -19,4 +19,5 @@ def validate_id(id):
 
 if __name__ == '__main__':
 
-    print(validate_id('Xx'))
+    print(validate_id('Xx'))    
+    print(validate_id(3368967))
