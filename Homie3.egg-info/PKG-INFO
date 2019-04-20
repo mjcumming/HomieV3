@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Homie3
-Version: 0.0.2
+Version: 0.0.5
 Summary: Homie 3.0.1 Implementation
 Home-page: https://github.com/mjcumming/Homie
 Author: Michael Cumming
@@ -12,7 +12,7 @@ Description: # Homie
         
         Class based system to easily add Homie 3.0.1 support to devices.
         
-        EG.
+        EG. A dimmer device below requires that a set_value method be provided and the mqtt settings. All other requirements of the Homie specification are handled.
         
         ~~~~
         import time
@@ -46,6 +46,7 @@ Description: # Homie
         
         
         ~~~~
+Keywords: HOMIE,MQTT
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License

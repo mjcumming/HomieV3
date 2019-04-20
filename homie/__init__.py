@@ -1,1 +1,2 @@
-__version__ = "0.0.2"
+name="Homie3"
+__version__ = "0.0.5"

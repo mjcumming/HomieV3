@@ -5,6 +5,19 @@ import time
 import somecomfort
 
 from homie.device_thermostat import Device_Honeywell_Thermostat
+from homie.device_temphum import Device_TempHum
+
+class TCC_TempHum(Device_TempHum):
+
+    def __init__(self, device_id=None, name=None, homie_settings=None, mqtt_settings=None, temp_units='F',tcc_device):
+
+        self.tcc_device
+
+        super().__init__ (device_id, name, homie_settings, mqtt_settings)
+
+    def update(self,temperature,humidity):
+        self.temperture.value = temperature
+        self.humidity.value = humidity
 
 mqtt_settings = {
     'MQTT_BROKER' : 'QueenMQTT',
