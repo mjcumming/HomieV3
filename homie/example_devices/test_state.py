@@ -16,9 +16,8 @@ STATES = "A,B,C,D,E"
 class My_State(Device_State):
 
     def set_state(self,state):
-        super().set_state(state)
         print('Received MQTT message to set the state to {}. Must replace this method'.format(state))
-        
+        super().set_state(state)
 
 try:
 

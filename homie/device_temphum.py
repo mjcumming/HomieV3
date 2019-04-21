@@ -6,6 +6,10 @@ from homie.node.node_base import Node_Base
 from homie.node.property.property_temperature import Property_Temperature
 from homie.node.property.property_humidity import Property_Humidity
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class Device_TempHum(Device_Base):
 
     def __init__(self, device_id=None, name=None, homie_settings=None, mqtt_settings=None, temp_units='F'):
@@ -15,8 +19,8 @@ class Device_TempHum(Device_Base):
         node = (Node_Base(self,'status','Status','status'))
         self.add_node (node)
 
-        self.temperture = Property_Temperature (node,unit=temp_units)
-        node.add_property (self.temperture)
+        self.temperature = Property_Temperature (node,unit=temp_units)
+        node.add_property (self.temperature)
 
         self.humidity = Property_Humidity (self)
         node.add_property (self.humidity)
@@ -24,6 +28,7 @@ class Device_TempHum(Device_Base):
         self.start()
 
     def update(self,temperature,humidity):
-        self.temperture.value = temperature
+        logging.info ('Updated Temperature {}, Humidity {}'.format(temperature,humidity))
+        self.temperature.value = temperature
         self.humidity.value = humidity
 

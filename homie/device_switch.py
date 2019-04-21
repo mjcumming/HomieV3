@@ -21,6 +21,6 @@ class Device_Switch(Device_Base):
 
     def set_switch(self,onoff):#received commands from clients
         logging.info ('Switch Set {}'.format(onoff))
-        print('must override set switch',onoff)
+
         
 
