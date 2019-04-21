@@ -4,7 +4,7 @@ Python implementation of Homie 3.0.1
 
 Class based system to easily add Homie 3.0.1 support to devices.
 
-EG. A dimmer device below requires that a set_value method be provided and the mqtt settings. All other requirements of the Homie specification are handled.
+EG. To create a dimmer device requires that a set_dimmer method be provided. When creating a device, all that is required is to provide the MQTT settings. All other requirements of the Homie specification are automatically handled.
 
 ~~~~
 import time
