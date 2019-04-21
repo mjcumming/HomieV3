@@ -12,7 +12,7 @@ from homie.support.helpers import validate_id
 from homie.support.repeating_timer import Repeating_Timer
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 mqtt_logger = logging.getLogger(__name__)
 mqtt_logger.setLevel('INFO')
