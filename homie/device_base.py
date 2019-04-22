@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 
 import logging
-import atexit
 import sys
 import time
+
+import timer3
 
 import paho.mqtt.client as mqtt_client
 from uuid import getnode as get_mac
 from homie.support.network_information import Network_Information
 from homie.support.helpers import validate_id
 from homie.support.repeating_timer import Repeating_Timer
+
+import atexit
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -88,11 +92,16 @@ class Device_Base(object):
 
         def update_status():
             self.publish_statistics()
-
-        self.timer = Repeating_Timer(self.homie_settings ['update_interval'],update_status) #update the state topic 
+        
+        self.timer = timer3.apply_interval(self.homie_settings ['update_interval'] * 1000, update_status, priority=0)
+        
+        #self.timer = Repeating_Timer(self.homie_settings ['update_interval'],update_status) #update the state topic 
 
         if self.state == 'init':
             self.state == 'ready'
+
+    def stop_timer(self):
+        self.timer.cancel()
 
     @property
     def state(self):
@@ -240,4 +249,4 @@ class Device_Base(object):
 
 
     def __del__(self):
-        self.timer.stop()        
+        self.timer.cancel()        

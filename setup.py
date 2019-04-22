@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 
 setuptools.setup(name='Homie3',
-      version='0.0.7',
+      version='0.0.8',
       description='Homie 3.0.1 Implementation',
       author='Michael Cumming',
       author_email='mike@4831.com',
@@ -21,6 +21,7 @@ setuptools.setup(name='Homie3',
       ],      
     install_requires=[
         'paho-mqtt>=1.3.0',
-        'netifaces>=0.10.6'
+        'netifaces>=0.10.6',
+        'timer3'
     ]      
 )
