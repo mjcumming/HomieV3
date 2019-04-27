@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt_client
 from uuid import getnode as get_mac
 from homie.support.network_information import Network_Information
 from homie.support.helpers import validate_id
-from homie.support.repeating_timer import Repeating_Timer
+#from homie.support.repeating_timer import Repeating_Timer
 
 import atexit
 
@@ -113,7 +113,7 @@ class Device_Base(object):
             self._state = state
             self.publish( "/".join((self.topic, "$state")),self._state)
         else:
-            logging.warning ('invalid device state {}'.format(state))
+            logging.warning ('Homie Invalid device state {}'.format(state))
 
     def publish_attributes(self):
         ip = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
@@ -157,14 +157,14 @@ class Device_Base(object):
             node.publish_attributes()
 
     def broadcast_handler(self,topic,payload):
-        logging.info ('Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
+        logging.info ('MQTT Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
 
     def publish(self, topic, payload, retain=True, qos=1):
         if self.mqtt_connected:
-            logger.info('publish topic: {}, payload: {}'.format(topic,payload))
+            logger.info('MQTT publish topic: {}, payload: {}'.format(topic,payload))
             self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
         else:
-            logger.warning('not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
+            logger.warning('MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
 
     def _homie_validate_settings(self,settings):
         if settings is not None:
@@ -189,6 +189,8 @@ class Device_Base(object):
         return settings
 
     def _mqtt_connect(self):
+        logger.info("MQTT Connecting to {} as client {}".format(self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings['MQTT_CLIENT_ID']))
+
         self.mqtt_client = mqtt_client.Client(client_id=self.mqtt_settings['MQTT_CLIENT_ID'])
         self.mqtt_client.on_connect = self._on_connect
         self.mqtt_client.on_message = self._on_message
@@ -215,10 +217,10 @@ class Device_Base(object):
 
             self.mqtt_client.loop_start()
         except Exception as e:
-            logger.warning ('Unable to connect to MQTT Broker {}'.format(e))
+            logger.warning ('MQTT Unable to connect to Broker {}'.format(e))
 
     def _on_connect(self,client, userdata, flags, rc):
-        logger.debug("_connect: {}".format(rc))        
+        logger.info("MQTT Connect: {}".format(rc))        
 
         if rc == 0:
             self.mqtt_connected = True
@@ -237,16 +239,19 @@ class Device_Base(object):
         if topic in self.mqtt_subscription_handlers:
             self.mqtt_subscription_handlers [topic] (topic, payload)        
         else:
-            logger.warning ('Unknown MQTT Message: Topic {}, Payload {}'.format(topic,payload))
+            logger.warning ('MQTT Unknown Message: Topic {}, Payload {}'.format(topic,payload))
     
     def _on_publish(self, *args):
         #print('MQTT Publish: Payload {}'.format(*args))
         pass
 
     def _on_disconnect(self):
-        logger.debug("_disconnect:")        
+        logger.debug("MQTT Disconnect:")        
         self.mqtt_connected = False
 
 
     def __del__(self):
-        self.timer.cancel()        
+        pass
+
+        #if self.timer:
+         #   self.timer.cancel()        
