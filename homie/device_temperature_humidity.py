@@ -22,7 +22,7 @@ class Device_Temperature_Humidity(Device_Base):
         self.temperature = Property_Temperature (node,unit=temp_units)
         node.add_property (self.temperature)
 
-        self.humidity = Property_Humidity (self)
+        self.humidity = Property_Humidity (node)
         node.add_property (self.humidity)
 
         self.start()
