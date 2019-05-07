@@ -1,29 +1,24 @@
 #!/usr/bin/env python
 
-from homie.device_base import Device_Base
-from homie.node.node_base import Node_Base
-
-from homie.node.property.property_temperature import Property_Temperature
-
 import logging
+
+from homie.device_status import Device_Status
+from homie.node.property.property_temperature import Property_Temperature
 
 logger = logging.getLogger(__name__)
 
-class Device_Temperature(Device_Base):
+class Device_Temperature(Device_Status):
 
     def __init__(self, device_id=None, name=None, homie_settings=None, mqtt_settings=None, temp_units='F'):
+        self.temp_units = temp_units
 
         super().__init__ (device_id, name, homie_settings, mqtt_settings)
 
-        node = (Node_Base(self,'status','Status','status'))
-        self.add_node (node)
+    def register_status_properties(self, node):
+        self.temperature = Property_Temperature(node, unit=self.temp_units)
+        node.add_property(self.temperature)
 
-        self.temperature = Property_Temperature (node,unit=temp_units)
-        node.add_property (self.temperature)
-
-        self.start()
-
-    def update(self,temperature):
-        logging.info ('Updated Temperature {}'.format(temperature))
+    def update_temperature(self,temperature):
+        logger.info ('Updated Temperature {}'.format(temperature))
         self.temperature.value = temperature
 
