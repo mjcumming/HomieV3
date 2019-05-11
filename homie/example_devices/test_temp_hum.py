@@ -12,14 +12,17 @@ mqtt_settings = {
 
 try:
 
-    dimmer = Device_Temperature_Humidity(name = 'Temp Hum',mqtt_settings=mqtt_settings)
+    temp_hum = Device_Temperature_Humidity(name ='Temp Hum', mqtt_settings=mqtt_settings)
     
     while True:
-        dimmer.update(50,10)
+        temp_hum.update_temperature(50)
+        temp_hum.update_humidity(10)
         time.sleep(5)
-        dimmer.update(10,30)
+        temp_hum.update_temperature(10)
+        temp_hum.update_humidity(30)
         time.sleep(5)
-        dimmer.update(90,90)
+        temp_hum.update_temperature(90)
+        temp_hum.update_humidity(90)
         time.sleep(5)
 
 except (KeyboardInterrupt, SystemExit):

@@ -48,7 +48,8 @@ HOMIE_SETTINGS = {
     'topic' : 'homie', 
     'fw_name' : 'python',
     'fw_version' : sys.version, 
-    'update_interval' : 60, 
+    'update_interval' : 60,
+    'keepalive_interval': None,  # equals update_interval by default
     'implementation' : sys.platform, 
 }
 
@@ -92,8 +93,13 @@ class Device_Base(object):
 
         def update_status():
             self.publish_statistics()
-        
-        self.timer = timer3.apply_interval(self.homie_settings ['update_interval'] * 1000, update_status, priority=0)
+
+        if self.homie_settings['keepalive_interval']:
+            keepalive_interval = self.homie_settings['keepalive_interval']
+        else:
+            keepalive_interval = self.homie_settings['update_interval']
+
+        self.timer = timer3.apply_interval(keepalive_interval * 1000, update_status, priority=0)
         
         #self.timer = Repeating_Timer(self.homie_settings ['update_interval'],update_status) #update the state topic 
 
@@ -125,11 +131,14 @@ class Device_Base(object):
         self.publish("/".join((self.topic, "$mac")),mac)
         self.publish("/".join((self.topic, "$fw/name")),self.homie_settings ['fw_name'])
         self.publish("/".join((self.topic, "$fw/version")),self.homie_settings ['fw_version'])
-        self.publish("/".join((self.topic, "$implmentation")),self.homie_settings ['implementation'])
+        self.publish("/".join((self.topic, "$implementation")),self.homie_settings ['implementation'])
         self.publish("/".join((self.topic, "$stats/interval")),self.homie_settings ['update_interval'])
 
     def publish_statistics(self):
         self.publish("/".join((self.topic, "$stats/uptime")),time.time()-self.start_time)
+        self.publish("/".join((self.topic, "$stats/interval")), self.homie_settings['update_interval'])  # Required
+        # for Openhab 2.4. https://github.com/eclipse/smarthome/issues/6495#issuecomment-437603237. Otherwise thing
+        # goes offline.
 
     def add_subscription(self,topic,handler): #subscription list to the required MQTT topics, used by properties to catch set topics
         self.mqtt_subscription_handlers [topic] = handler
