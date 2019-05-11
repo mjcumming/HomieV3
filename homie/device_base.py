@@ -125,7 +125,7 @@ class Device_Base(object):
         self.publish("/".join((self.topic, "$mac")),mac)
         self.publish("/".join((self.topic, "$fw/name")),self.homie_settings ['fw_name'])
         self.publish("/".join((self.topic, "$fw/version")),self.homie_settings ['fw_version'])
-        self.publish("/".join((self.topic, "$implmentation")),self.homie_settings ['implementation'])
+        self.publish("/".join((self.topic, "$implementation")),self.homie_settings ['implementation'])
         self.publish("/".join((self.topic, "$stats/interval")),self.homie_settings ['update_interval'])
 
     def publish_statistics(self):
