@@ -7,3 +7,8 @@ dist/*
 homie/test/*
 homie.egg-info/*
 MANIFEST
+Homie3.egg-info/dependency_links.txt
+Homie3.egg-info/PKG-INFO
+Homie3.egg-info/requires.txt
+Homie3.egg-info/SOURCES.txt
+Homie3.egg-info/top_level.txt
