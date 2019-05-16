@@ -35,6 +35,9 @@ class Node_Base(object):
     def get_property(self, property_id):
         return self.properties [property_id]
 
+    def set_property_value(self, property_id, value):
+        self.get_property (property_id).value = value
+
     def publish(self,topic,payload,retain,qos):
         self.device.publish (topic,payload,retain,qos)
 
