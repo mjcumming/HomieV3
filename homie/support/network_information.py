@@ -6,6 +6,22 @@ import socket
 _LOGGER = logging.getLogger(__name__)
 
 
+''' or use psutils
+
+import psutil
+
+mac_addresses = []
+
+nics = psutil.net_if_addrs()
+nics.pop('lo') # remove loopback since it doesnt have a real mac address
+
+for i in nics:
+    for j in nics[i]:
+        if j.family == 17:  # AF_LINK
+            mac_addresses.append(j.address)
+'''
+
+
 class Network_Information(object):
     """Util for getting a interface' ip to a specific host and the corresponding mac address."""
 

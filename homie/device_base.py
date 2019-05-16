@@ -159,7 +159,7 @@ class Device_Base(object):
 
     def _homie_validate_settings(self,settings):
         if settings is not None:
-            for setting,value in HOMIE_SETTINGS.items():
+            for setting in HOMIE_SETTINGS.items():
                 if not setting in settings:
                     settings [setting] = HOMIE_SETTINGS [setting]
     
@@ -171,7 +171,7 @@ class Device_Base(object):
         return settings
 
     def _mqtt_validate_settings(self,settings):
-        for setting,value in MQTT_SETTINGS.items():
+        for setting in MQTT_SETTINGS.items():
             if not setting in settings:
                 settings [setting] = MQTT_SETTINGS [setting]
 
