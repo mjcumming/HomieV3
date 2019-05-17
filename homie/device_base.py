@@ -154,11 +154,14 @@ class Device_Base(object):
     def remove_node(self, node_id):
         del self.nodes [node_id]
 
-        if self.device.start_time is not None: #running, publish property changes
+        if self.start_time is not None: #running, publish property changes
             self.publish_nodes()
 
     def get_node(self,node_id):
-        return self.nodes [node_id]
+        if node_id in self.nodes:
+            return self.nodes [node_id]
+        else:
+            return None
 
     def publish_nodes(self):
         nodes = ",".join(self.nodes.keys())

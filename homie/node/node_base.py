@@ -43,7 +43,10 @@ class Node_Base(object):
             self.publish_properties()
 
     def get_property(self, property_id):
-        return self.properties [property_id]
+        if property_id in self.properties:
+            return self.properties [property_id]
+        else:
+            return None
 
     def set_property_value(self, property_id, value):
         self.get_property (property_id).value = value
