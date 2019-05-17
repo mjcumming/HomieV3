@@ -1,12 +1,12 @@
 
 from homie.support.helpers import validate_id
 
-# Arrays not implemented
+# Ndee arrays not implemented
 
 
 class Node_Base(object):
 
-    def __init__(self, device, id, name, type_, retain=True, qos=1): # node arrays are not supported
+    def __init__(self, device, id, name, type_, retain=True, qos=1):
         assert validate_id(id)
         assert device
         self.id = id
@@ -30,7 +30,17 @@ class Node_Base(object):
         self._topic =  "/".join([parent_topic,self.id])
 
     def add_property(self, property_):
+        #assert self.properties [property_.id] == None
         self.properties [property_.id] = property_
+
+        if self.device.start_time is not None: #running, publish property changes
+            self.publish_properties()
+
+    def remove_property(self, property_id):
+        del self.properties [property_id]
+
+        if self.device.start_time is not None: #running, publish property changes
+            self.publish_properties()
 
     def get_property(self, property_id):
         return self.properties [property_id]

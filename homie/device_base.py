@@ -60,6 +60,7 @@ class Device_Base(object):
     def __init__(self, device_id=None, name=None, homie_settings={}, mqtt_settings={}):
         if device_id is None:
             device_id=self.generate_device_id()
+
         assert validate_id(device_id), device_id
         self.device_id = device_id
 
@@ -67,7 +68,7 @@ class Device_Base(object):
         self.name = name
 
         self.homie_settings = self._homie_validate_settings (homie_settings)
-
+        
         self.mqtt_settings = self._mqtt_validate_settings (mqtt_settings)
 
         self._state = "init"
@@ -79,6 +80,8 @@ class Device_Base(object):
         self.nodes = {}
 
         self.topic = "/".join((self.homie_settings ['topic'], self.device_id))
+
+        self.start_time = None
     
     def generate_device_id(self):
         global instance_count
@@ -94,7 +97,6 @@ class Device_Base(object):
             self.publish_statistics()
 
         self.timer = timer3.apply_interval(self.homie_settings['update_interval']* 1000, update_status, priority=0)
-        
         #self.timer = Repeating_Timer(self.homie_settings ['update_interval'],update_status) #update the state topic 
 
         if self.state == 'init':
@@ -146,6 +148,15 @@ class Device_Base(object):
     def add_node(self,node):
         self.nodes [node.id] = node
 
+        if self.start_time is not None: #running, publish node changes
+            self.publish_nodes()
+
+    def remove_node(self, node_id):
+        del self.nodes [node_id]
+
+        if self.device.start_time is not None: #running, publish property changes
+            self.publish_nodes()
+
     def get_node(self,node_id):
         return self.nodes [node_id]
 
@@ -168,7 +179,7 @@ class Device_Base(object):
 
     def _homie_validate_settings(self,settings):
         if settings is not None:
-            for setting in HOMIE_SETTINGS.items():
+            for setting,value in HOMIE_SETTINGS.items():
                 if not setting in settings:
                     settings [setting] = HOMIE_SETTINGS [setting]
     
@@ -180,7 +191,7 @@ class Device_Base(object):
         return settings
 
     def _mqtt_validate_settings(self,settings):
-        for setting in MQTT_SETTINGS.items():
+        for setting,value in MQTT_SETTINGS.items():
             if not setting in settings:
                 settings [setting] = MQTT_SETTINGS [setting]
 

@@ -45,10 +45,7 @@ class Property_Base(object):
             assert(set_value)
             self.set_value = set_value
 
-        if value:
-            self._value = value
-        else:
-            self._value = False 
+        self._value = value
 
     @property
     def value(self):
@@ -91,7 +88,7 @@ class Property_Base(object):
         if self.data_format:
             self.publish ("/".join((self.topic, "$format")), self.data_format, True, self.qos)
 
-        if self.value: # publish value if known, by setting it
+        if self.value is not None: # publish value if known, by setting it
             self.value = self.value
 
     def get_subscriptions(self): # subscribe to the set topic
