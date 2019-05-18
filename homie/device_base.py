@@ -77,6 +77,10 @@ class Device_Base(object):
         self.mqtt_connected = False
         self.mqtt_subscription_handlers = {}
 
+        #may need a way to set these
+        self.retained = True
+        self.qos = 1
+
         self.nodes = {}
 
         self.topic = "/".join((self.homie_settings ['topic'], self.device_id))
@@ -110,28 +114,28 @@ class Device_Base(object):
         return self._state
 
     @state.setter
-    def state(self, state):
+    def state(self, state, retain = True, qos = 1):
         if state in DEVICE_STATES:
             self._state = state
-            self.publish( "/".join((self.topic, "$state")),self._state)
+            self.publish( "/".join((self.topic, "$state")),self._state, retain, 1)
         else:
             logging.warning ('Homie Invalid device state {}'.format(state))
 
-    def publish_attributes(self):
+    def publish_attributes(self, retain=True, qos=1):
         ip = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
         mac = network_info.get_local_mac_for_ip(ip)
 
-        self.publish("/".join((self.topic, "$homie")),self.homie_settings ['version'])
-        self.publish("/".join((self.topic, "$name")),self.name)
-        self.publish("/".join((self.topic, "$localip")),ip)
-        self.publish("/".join((self.topic, "$mac")),mac)
-        self.publish("/".join((self.topic, "$fw/name")),self.homie_settings ['fw_name'])
-        self.publish("/".join((self.topic, "$fw/version")),self.homie_settings ['fw_version'])
-        self.publish("/".join((self.topic, "$implementation")),self.homie_settings ['implementation'])
-        self.publish("/".join((self.topic, "$stats/interval")),self.homie_settings ['update_interval'])
+        self.publish("/".join((self.topic, "$homie")),self.homie_settings ['version'], retain, qos)
+        self.publish("/".join((self.topic, "$name")),self.name, retain, qos)
+        self.publish("/".join((self.topic, "$localip")),ip, retain, qos)
+        self.publish("/".join((self.topic, "$mac")),mac, retain, qos)
+        self.publish("/".join((self.topic, "$fw/name")),self.homie_settings ['fw_name'], retain, qos)
+        self.publish("/".join((self.topic, "$fw/version")),self.homie_settings ['fw_version'], retain, qos)
+        self.publish("/".join((self.topic, "$implementation")),self.homie_settings ['implementation'], retain, qos)
+        self.publish("/".join((self.topic, "$stats/interval")),self.homie_settings ['update_interval'], retain, qos)
 
-    def publish_statistics(self):
-        self.publish("/".join((self.topic, "$stats/uptime")),time.time()-self.start_time)
+    def publish_statistics(self, retain=True, qos=1):
+        self.publish("/".join((self.topic, "$stats/uptime")),time.time()-self.start_time, retain, qos)
 
     def add_subscription(self,topic,handler): #subscription list to the required MQTT topics, used by properties to catch set topics
         self.mqtt_subscription_handlers [topic] = handler
@@ -149,13 +153,13 @@ class Device_Base(object):
         self.nodes [node.id] = node
 
         if self.start_time is not None: #running, publish node changes
-            self.publish_nodes()
+            self.publish_nodes(self.retain, self.qos)
 
     def remove_node(self, node_id):
         del self.nodes [node_id]
 
         if self.start_time is not None: #running, publish property changes
-            self.publish_nodes()
+            self.publish_nodes(retain = False)
 
     def get_node(self,node_id):
         if node_id in self.nodes:
@@ -163,19 +167,19 @@ class Device_Base(object):
         else:
             return None
 
-    def publish_nodes(self):
+    def publish_nodes(self, retain=True, qos=1):
         nodes = ",".join(self.nodes.keys())
-        self.publish("/".join((self.topic, "$nodes")),nodes)
+        self.publish("/".join((self.topic, "$nodes")), nodes, retain, qos)
 
         for _,node in self.nodes.items():
-            node.publish_attributes()
+            node.publish_attributes(retain, qos)
 
     def broadcast_handler(self,topic,payload):
         logging.info ('MQTT Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
 
     def publish(self, topic, payload, retain=True, qos=1):
         if self.mqtt_connected:
-            logger.info('MQTT publish topic: {}, payload: {}'.format(topic,payload))
+            logger.info('MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
             self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
         else:
             logger.warning('MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))

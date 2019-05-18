@@ -5,7 +5,7 @@ import time
 from homie.device_contact import Device_Contact
 
 mqtt_settings = {
-    'MQTT_BROKER' : 'QueenMQTT',
+    'MQTT_BROKER' : 'OpenHab',
     'MQTT_PORT' : 1883,
 }
 

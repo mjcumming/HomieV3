@@ -52,10 +52,10 @@ class Property_Base(object):
         return self._value
 
     @value.setter
-    def value(self, value):
+    def value(self, value, retain=True, qos=1):
         if self.validate_value(value):
             self._value = value
-            self.publish (self.topic,value,self.retained,self.qos)
+            self.publish (self.topic,value,retain,qos)
             logger.debug ('Value set to:   {}'.format(value))
         else:
             logger.warn ('Invalid Value:   {}'.format(value))
@@ -74,19 +74,19 @@ class Property_Base(object):
     def topic(self, parent_topic):
         self._topic =  "/".join([parent_topic,self.id])
 
-    def publish(self,topic,payload, retain, qos):
+    def publish(self, topic, payload, retain, qos):
         self.node.publish (topic,payload,retain,qos)
 
-    def publish_attributes(self):
-        self.publish ("/".join((self.topic, "$name")), self.name, True, self.qos)
-        self.publish ("/".join((self.topic, "$settable")), self.settable, True, self.qos)
-        self.publish ("/".join((self.topic, "$retained")), self.retained, True, self.qos)
+    def publish_attributes(self, retain=True, qos=1):
+        self.publish ("/".join((self.topic, "$name")), self.name, retain, qos)
+        self.publish ("/".join((self.topic, "$settable")), self.settable, retain, qos)
+        self.publish ("/".join((self.topic, "$retained")), self.retained, retain, qos)
         if self.unit:
-            self.publish ("/".join((self.topic, "$unit")), self.unit, True, self.qos)
+            self.publish ("/".join((self.topic, "$unit")), self.unit, retain, qos)
         if self.data_type:
-            self.publish ("/".join((self.topic, "$datatype")), self.data_type, True, self.qos)
+            self.publish ("/".join((self.topic, "$datatype")), self.data_type, retain, qos)
         if self.data_format:
-            self.publish ("/".join((self.topic, "$format")), self.data_format, True, self.qos)
+            self.publish ("/".join((self.topic, "$format")), self.data_format, retain, qos)
 
         if self.value is not None: # publish value if known, by setting it
             self.value = self.value

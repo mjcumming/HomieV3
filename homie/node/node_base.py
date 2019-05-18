@@ -37,10 +37,12 @@ class Node_Base(object):
             self.publish_properties()
 
     def remove_property(self, property_id):
+        property_ = self.properties [property_id]
         del self.properties [property_id]
 
         if self.device.start_time is not None: #running, publish property changes
             self.publish_properties()
+            property_.publish_attributes(False,1)
 
     def get_property(self, property_id):
         if property_id in self.properties:
@@ -54,18 +56,18 @@ class Node_Base(object):
     def publish(self,topic,payload,retain,qos):
         self.device.publish (topic,payload,retain,qos)
 
-    def publish_attributes(self):
-        self.publish ("/".join((self.topic, "$name")), self.name, self.retain, self.qos)
-        self.publish ("/".join((self.topic, "$type")), self.type, self.retain, self.qos)
+    def publish_attributes(self, retain=True, qos=1):
+        self.publish ("/".join((self.topic, "$name")), self.name, retain, qos)
+        self.publish ("/".join((self.topic, "$type")), self.type, retain, qos)
 
         self.publish_properties()
         
-    def publish_properties(self):
+    def publish_properties(self, retain=True, qos=1):
         properties = ",".join(self.properties.keys())
-        self.publish ("/".join((self.topic, "$properties")), properties, True, 1)
+        self.publish ("/".join((self.topic, "$properties")), properties, retain, qos)
 
         for _,property_ in self.properties.items():
-            property_.publish_attributes()        
+            property_.publish_attributes(retain, qos)        
 
     def get_subscriptions(self):
         subscriptions = {}
