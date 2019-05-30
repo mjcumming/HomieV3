@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 mqtt_logger = logging.getLogger(__name__)
-mqtt_logger.setLevel('INFO')
+mqtt_logger.setLevel('WARN')
 
 network_info = Network_Information()
 
@@ -153,7 +153,7 @@ class Device_Base(object):
         self.nodes [node.id] = node
 
         if self.start_time is not None: #running, publish node changes
-            self.publish_nodes(self.retain, self.qos)
+            self.publish_nodes(self.retained, self.qos)
 
     def remove_node(self, node_id):
         del self.nodes [node_id]
@@ -190,7 +190,7 @@ class Device_Base(object):
                 if not setting in settings:
                     settings [setting] = HOMIE_SETTINGS [setting]
     
-            if 'MQTT_CLIENT_ID' not in settings:
+            if 'MQTT_CLIENT_ID' not in settings or settings ['MQTT_CLIENT_ID'] is None:
                 settings ['MQTT_CLIENT_ID'] = 'Homie_'+self.device_id
         else:
             settings = HOMIE_SETTINGS
@@ -252,6 +252,8 @@ class Device_Base(object):
     def _on_message(self, client, userdata, msg):
         topic = msg.topic
         payload = msg.payload.decode("utf-8")
+        print ('topic',topic)
+        print ('payload',payload)
         logging.info ('MQTT Message: Topic {}, Payload {}'.format(topic,payload))
 
         if topic in self.mqtt_subscription_handlers:

@@ -11,7 +11,7 @@ class Node_State(Node_Base):
 
         super().__init__(device,id,name,type_,retain,qos)
 
-        self.add_property (Property_Enum (self,'state','State',data_format=state_values,set_value=lambda topic,payload: set_state(payload)))
+        self.add_property (Property_Enum (self,'state','State',data_format=state_values,set_value=set_state))
 
     def update_state(self,state):
         self.get_property('state').value = state

@@ -10,7 +10,7 @@ class Node_Switch(Node_Base):
 
         assert (set_switch) # must provide a function to set the value of the switch
 
-        self.add_property (Property_Switch (self,set_value = lambda topic,payload: set_switch(payload)))
+        self.add_property (Property_Switch (self,set_value = set_switch))
 
     def update_switch(self,onoff):
         self.get_property ('switch').value = onoff
