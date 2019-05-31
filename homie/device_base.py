@@ -14,11 +14,9 @@ from homie.support.helpers import validate_id
 
 import atexit
 
-
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logger.debug)
 
-mqtt_logger = logger.getLogger(__name__)
+mqtt_logger = logging.getLogger(__name__)
 mqtt_logger.setLevel('WARN')
 
 network_info = Network_Information()

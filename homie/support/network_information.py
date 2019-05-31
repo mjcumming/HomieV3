@@ -5,7 +5,6 @@ import netifaces
 import socket
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logger.debug)
 
 ''' or use psutils
 
