@@ -16,9 +16,9 @@ import atexit
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logger.debug)
 
-mqtt_logger = logging.getLogger(__name__)
+mqtt_logger = logger.getLogger(__name__)
 mqtt_logger.setLevel('WARN')
 
 network_info = Network_Information()
@@ -119,7 +119,7 @@ class Device_Base(object):
             self._state = state
             self.publish( "/".join((self.topic, "$state")),self._state, retain, 1)
         else:
-            logging.warning ('Homie Invalid device state {}'.format(state))
+            logger.warning ('Homie Invalid device state {}'.format(state))
 
     def publish_attributes(self, retain=True, qos=1):
         ip = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
@@ -140,7 +140,7 @@ class Device_Base(object):
     def add_subscription(self,topic,handler): #subscription list to the required MQTT topics, used by properties to catch set topics
         self.mqtt_subscription_handlers [topic] = handler
         self.mqtt_client.subscribe (topic,0)
-        logging.info ('MQTT subscribed to {}'.format(topic))
+        logger.debug ('MQTT subscribed to {}'.format(topic))
 
     def subscribe_topics(self):
         self.add_subscription ("/".join((self.topic, "$broadcast/#")),self.broadcast_handler) #get the broadcast events
@@ -175,11 +175,11 @@ class Device_Base(object):
             node.publish_attributes(retain, qos)
 
     def broadcast_handler(self,topic,payload):
-        logging.info ('MQTT Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
+        logger.debug ('MQTT Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
 
     def publish(self, topic, payload, retain=True, qos=1):
         if self.mqtt_connected:
-            logger.info('MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
+            logger.debug('MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
             self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
         else:
             logger.warning('MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
@@ -207,7 +207,7 @@ class Device_Base(object):
         return settings
 
     def _mqtt_connect(self):
-        logger.info("MQTT Connecting to {} as client {}".format(self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings['MQTT_CLIENT_ID']))
+        logger.debug("MQTT Connecting to {} as client {}".format(self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings['MQTT_CLIENT_ID']))
 
         self.mqtt_client = mqtt_client.Client(client_id=self.mqtt_settings['MQTT_CLIENT_ID'])
         self.mqtt_client.on_connect = self._on_connect
@@ -238,7 +238,7 @@ class Device_Base(object):
             logger.warning ('MQTT Unable to connect to Broker {}'.format(e))
 
     def _on_connect(self,client, userdata, flags, rc):
-        logger.info("MQTT Connect: {}".format(rc))        
+        logger.debug("MQTT Connect: {}".format(rc))        
 
         if rc == 0:
             self.mqtt_connected = True
@@ -252,9 +252,8 @@ class Device_Base(object):
     def _on_message(self, client, userdata, msg):
         topic = msg.topic
         payload = msg.payload.decode("utf-8")
-        print ('topic',topic)
-        print ('payload',payload)
-        logging.info ('MQTT Message: Topic {}, Payload {}'.format(topic,payload))
+
+        logger.debug ('MQTT Message: Topic {}, Payload {}'.format(topic,payload))
 
         if topic in self.mqtt_subscription_handlers:
             self.mqtt_subscription_handlers [topic] (topic, payload)        

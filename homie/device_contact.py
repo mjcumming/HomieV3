@@ -20,6 +20,6 @@ class Device_Contact(Device_Base):
 
     def update_contact(self,state):
         self.get_node('contact').update_contact(state)
-        logging.info ('Contact Update {}'.format(state))
+        logger.debug ('Contact Update {}'.format(state))
 
 

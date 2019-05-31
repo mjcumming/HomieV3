@@ -20,10 +20,10 @@ class Device_State(Device_Base):
 
     def update_state(self,state):
         self.get_node('state').update_state(state)
-        logging.info ('State Update {}'.format(state))
+        logger.debug ('State Update {}'.format(state))
 
 
     def set_state(self,state):#received commands from clients
         # subclass must override and provide logic to set the device
-        logging.info ('State Set {}'.format(state))
+        logger.debug ('State Set {}'.format(state))
 

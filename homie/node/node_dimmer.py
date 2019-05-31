@@ -10,7 +10,7 @@ class Node_Dimmer(Node_Base):
 
         assert (set_dimmer) # must provide a function to set the value of the dimmer
 
-        self.add_property (Property_Dimmer (self,set_value=set_dimmer)
+        self.add_property (Property_Dimmer (self,set_value=set_dimmer))
 
     def update_dimmer(self,percent):
         self.get_property('dimmer').value = percent

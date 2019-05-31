@@ -17,10 +17,10 @@ class Device_Switch(Device_Base):
 
     def update_switch(self,onoff): #sends updates to clients
         self.get_node('switch').update_switch(onoff)
-        logging.info ('Switch Update {}'.format(onoff))
+        logger.debug ('Switch Update {}'.format(onoff))
 
     def set_switch(self,onoff):#received commands from clients
-        logging.info ('Switch Set {}'.format(onoff))
+        logger.debug ('Switch Set {}'.format(onoff))
 
         
 
