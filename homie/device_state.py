@@ -14,7 +14,7 @@ class Device_State(Device_Base):
 
         super().__init__ (device_id, name, homie_settings, mqtt_settings)
 
-        self.add_node(Node_State(self,id='state',name='State',state_values=state_values,set_state=self.set_state(state))
+        self.add_node(Node_State(self,id='state',name='State',state_values=state_values,set_state=self.set_state))
 
         self.start()
 

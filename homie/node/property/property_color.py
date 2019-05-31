@@ -15,7 +15,5 @@ class Property_Color(Property_Base):
         # check valid data format provided
 
     def message_handler(self,topic,payload):
-        if payload == 'true' or payload == 'false':  # need code to parse color values
-            super().message_handler(topic,payload)
-        else:
-            logger.warning ('Payload boolean value invalid for property for message {}, payload is {}'.format(topic,payload))
+        pass
+
