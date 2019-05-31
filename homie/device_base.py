@@ -231,6 +231,8 @@ class Device_Base(object):
                 keepalive=self.mqtt_settings ['MQTT_KEEPALIVE'],
             )
 
+            self.mqtt_connected = True # assume we are good to go
+
             self.mqtt_client.loop_start()
         except Exception as e:
             logger.warning ('MQTT Unable to connect to Broker {}'.format(e))
@@ -262,7 +264,7 @@ class Device_Base(object):
         #print('MQTT Publish: Payload {}'.format(*args))
         pass
 
-    def _on_disconnect(self):
+    def _on_disconnect(self,*args):
         logger.debug("MQTT Disconnect:")        
         self.mqtt_connected = False
 
