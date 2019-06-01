@@ -58,7 +58,7 @@ class Property_Base(object):
             self.publish (self.topic,value,retain,qos)
             logger.debug ('Value set to:   {}'.format(value))
         else:
-            logger.warn ('Invalid Value:   {}'.format(value))
+            logger.warn ('Invalid Value: Device {} Node {} Property {} Value {}'.format(self.node.device.name,self.node.name,self.name,value))
 
     def validate_value(self,value):
         return True # override as needed
