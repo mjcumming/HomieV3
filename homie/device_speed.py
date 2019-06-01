@@ -18,6 +18,7 @@ class Device_Speed(Device_Base):
         self.add_node(node)
 
         self.speed_property = Property_Speed(node,data_format=speeds,set_value=self.set_speed)
+        node.add_property(self.speed_property)
 
         self.start()
 
