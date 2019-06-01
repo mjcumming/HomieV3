@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class Device_Contact(Device_Base):
+class Device_Speed(Device_Base):
 
     def __init__(self, device_id=None, name=None, homie_settings=None, mqtt_settings=None,speeds ='OFF,LOW,MEDIUM,HIGH'):
 
