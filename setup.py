@@ -22,6 +22,6 @@ setuptools.setup(name='Homie3',
     install_requires=[
         'paho-mqtt>=1.3.0',
         'netifaces>=0.10.6',
-        'timer3'
+        #'timer3'
     ]      
 )

@@ -4,13 +4,13 @@ import logging
 import sys
 import time
 
-import timer3
+#import timer3
 
 import paho.mqtt.client as mqtt_client
 from uuid import getnode as get_mac
 from homie.support.network_information import Network_Information
 from homie.support.helpers import validate_id
-#from homie.support.repeating_timer import Repeating_Timer
+from homie.support.repeating_timer import Repeating_Timer
 
 import atexit
 
@@ -22,6 +22,8 @@ mqtt_logger.setLevel('WARN')
 network_info = Network_Information()
 
 instance_count = 0 # used to track the number of device instances to allow for changing the default device id
+
+repeating_timer = None
 
 DEVICE_STATES = [
     "init", 
@@ -98,7 +100,11 @@ class Device_Base(object):
         def update_status():
             self.publish_statistics()
 
-        self.timer = timer3.apply_interval(self.homie_settings['update_interval']* 1000, update_status, priority=0)
+        global repeating_timer
+        if repeating_timer == None:
+            repeating_timer = Repeating_Timer(self.homie_settings['update_interval']* 1000)
+
+        repeating_timer.add_callback (self.publish_statistics)
         #self.timer = Repeating_Timer(self.homie_settings ['update_interval'],update_status) #update the state topic 
 
         if self.state == 'init':

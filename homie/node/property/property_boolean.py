@@ -1,7 +1,4 @@
-import logging
 from .property_base import Property_Base
-
-logger = logging.getLogger(__name__)
 
 class Property_Boolean(Property_Base):
 
