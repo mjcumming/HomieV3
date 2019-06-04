@@ -21,7 +21,7 @@ class My_Dimmer(Device_Dimmer):
 
 try:
 
-    for x in range(50):
+    for x in range(5):
         print ('starting',x)
         dimmer = My_Dimmer(name = 'Test Dimmer {}'.format(x),mqtt_settings=mqtt_settings)
         print ('finshished',x)

@@ -38,7 +38,8 @@ def connect_mqtt_client (device,mqtt_settings):
 
     if mqtt_settings ['MQTT_SHARE_CLIENT'] is not True:
         mqtt_client = PAHO_MQTT_Client (mqtt_settings,device._on_mqtt_connection,device._on_mqtt_message)
-        print ('using seperate clients')
+        logger.debug ('using seperate clients')
+        global mqtt_client_count
         mqtt_client_count = mqtt_client_count + 1
         return mqtt_client
     else:
@@ -47,7 +48,7 @@ def connect_mqtt_client (device,mqtt_settings):
             common_mqtt_client = Common_MQTT_Client (mqtt_settings)
 
         common_mqtt_client.add_device(device)
-        print ('using shared client')
+        logger.debug ('using shared client')
         return common_mqtt_client.mqtt_client
     
 
