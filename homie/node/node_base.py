@@ -7,7 +7,7 @@ from homie.support.helpers import validate_id
 class Node_Base(object):
 
     def __init__(self, device, id, name, type_, retain=True, qos=1):
-        assert validate_id(id)
+        assert validate_id(id),'Node ID {} is not valid'.format(id)
         assert device
         self.id = id
         self.name = name

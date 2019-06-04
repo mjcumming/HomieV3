@@ -1,29 +1,21 @@
 #!/usr/bin/env python
 
-import logging
 import sys
 import time
 
-#import timer3
+import homie
 
-import paho.mqtt.client as mqtt_client
-from uuid import getnode as get_mac
-from homie.support.network_information import Network_Information
 from homie.support.helpers import validate_id
+from homie.mqtt.homie_mqtt_client import connect_mqtt_client
 from homie.support.repeating_timer import Repeating_Timer
 
-import atexit
-
+import logging
 logger = logging.getLogger(__name__)
-
-mqtt_logger = logging.getLogger(__name__)
-mqtt_logger.setLevel('WARN')
-
-network_info = Network_Information()
+logger.setLevel('INFO')
 
 instance_count = 0 # used to track the number of device instances to allow for changing the default device id
 
-repeating_timer = None
+repeating_timer = None # use common timer between all devices for updating state
 
 DEVICE_STATES = [
     "init", 
@@ -34,48 +26,36 @@ DEVICE_STATES = [
     "lost",
 ]
 
-MQTT_SETTINGS = {
-    'MQTT_BROKER' : None,
-    'MQTT_PORT' : 1883,
-    'MQTT_USERNAME' : None,
-    'MQTT_PASSWORD' : None,
-    'MQTT_KEEPALIVE' : 60,
-    'MQTT_CLIENT_ID' : None,
-}
-
 HOMIE_SETTINGS = {
     'version' : '3.0.1',
     'topic' : 'homie', 
-    'fw_name' : 'python',
-    'fw_version' : sys.version, 
+    'fw_name' : 'homie v3',
+    'fw_version' : homie.__version__, 
     'update_interval' : 60,
-    'implementation' : sys.platform, 
+    'implementation' : 'sys.platform', 
 }
-
-
 
 
 class Device_Base(object):
 
-    def __init__(self, device_id=None, name=None, homie_settings={}, mqtt_settings={}):
+    def __init__(self, device_id=None, name=None, homie_settings={}, mqtt_settings={},use_common_mqtt_client=False):
         if device_id is None:
             device_id=self.generate_device_id()
 
-        assert validate_id(device_id), device_id
+        assert validate_id(device_id), 'Invalid device id {}'.format(device_id)
         self.device_id = device_id
 
         assert name
         self.name = name
 
-        self.homie_settings = self._homie_validate_settings (homie_settings)
-        
-        self.mqtt_settings = self._mqtt_validate_settings (mqtt_settings)
-
         self._state = "init"
 
-        self.mqtt_client= None
-        self.mqtt_connected = False
-        self.mqtt_subscription_handlers = {}
+        self.homie_settings = self._homie_validate_settings (homie_settings)
+        self.topic = "/".join((self.homie_settings ['topic'], self.device_id))
+    
+        self.mqtt_client = connect_mqtt_client(self,mqtt_settings)
+        
+        #self.mqtt_client.set_will("/".join((self.topic, "$state")), "lost", retain=True, qos=1)
 
         #may need a way to set these
         self.retained = True
@@ -83,35 +63,30 @@ class Device_Base(object):
 
         self.nodes = {}
 
-        self.topic = "/".join((self.homie_settings ['topic'], self.device_id))
-
         self.start_time = None
     
     def generate_device_id(self):
         global instance_count
         instance_count = instance_count + 1
-        return "{:02x}".format(get_mac())+"{:04d}".format(instance_count)
+        #print ('Device instances {}'.format(instance_count))
+        #return "{:02x}".format(get_mac())+"{:04d}".format(instance_count)
+        return "device{:04d}".format(instance_count)
 
     def start(self): # called after the device has been built with nodes and properties
+        print ('Device startup')
         self.start_time = time.time()
-
-        self._mqtt_connect()
-
-        def update_status():
-            self.publish_statistics()
 
         global repeating_timer
         if repeating_timer == None:
             repeating_timer = Repeating_Timer(self.homie_settings['update_interval']* 1000)
 
         repeating_timer.add_callback (self.publish_statistics)
-        #self.timer = Repeating_Timer(self.homie_settings ['update_interval'],update_status) #update the state topic 
+
+        if self.mqtt_client.mqtt_connected: #run start up tasks if mqtt is ready, else wait for on_connect message from mqtt client
+            self._on_mqtt_connection(True)
 
         if self.state == 'init':
             self.state == 'ready'
-
-    def stop_timer(self):
-        self.timer.cancel()
 
     @property
     def state(self):
@@ -126,8 +101,7 @@ class Device_Base(object):
             logger.warning ('Homie Invalid device state {}'.format(state))
 
     def publish_attributes(self, retain=True, qos=1):
-        ip = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
-        mac = network_info.get_local_mac_for_ip(ip)
+        mac,ip = self.mqtt_client.get_mac_ip_address()
 
         self.publish("/".join((self.topic, "$homie")),self.homie_settings ['version'], retain, qos)
         self.publish("/".join((self.topic, "$name")),self.name, retain, qos)
@@ -142,11 +116,11 @@ class Device_Base(object):
         self.publish("/".join((self.topic, "$stats/uptime")),time.time()-self.start_time, retain, qos)
 
     def add_subscription(self,topic,handler): #subscription list to the required MQTT topics, used by properties to catch set topics
-        self.mqtt_subscription_handlers [topic] = handler
-        self.mqtt_client.subscribe (topic,0)
-        logger.debug ('MQTT subscribed to {}'.format(topic))
+        self.mqtt_client.add_subscription (topic,handler)
+        print ('Device MQTT added subscription {}'.format(topic))
 
     def subscribe_topics(self):
+        print('Device subscribing to topics')
         self.add_subscription ("/".join((self.topic, "$broadcast/#")),self.broadcast_handler) #get the broadcast events
 
         for _,node in self.nodes.items():
@@ -159,7 +133,7 @@ class Device_Base(object):
         if self.start_time is not None: #running, publish node changes
             self.publish_nodes(self.retained, self.qos)
 
-    def remove_node(self, node_id):
+    def remove_node(self, node_id): # not tested, needs work removing topics
         del self.nodes [node_id]
 
         if self.start_time is not None: #running, publish property changes
@@ -179,104 +153,33 @@ class Device_Base(object):
             node.publish_attributes(retain, qos)
 
     def broadcast_handler(self,topic,payload):
-        logger.debug ('MQTT Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
+        print ('Device MQTT Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
 
     def publish(self, topic, payload, retain=True, qos=1):
-        if self.mqtt_connected:
-            logger.debug('MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
+        if self.mqtt_client.mqtt_connected:
+            print('Device MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
             self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
         else:
-            logger.warning('MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
+            logger.warning('Device MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
 
     def _homie_validate_settings(self,settings):
         if settings is not None:
             for setting,value in HOMIE_SETTINGS.items():
                 if not setting in settings:
                     settings [setting] = HOMIE_SETTINGS [setting]
-    
-            if 'MQTT_CLIENT_ID' not in settings or settings ['MQTT_CLIENT_ID'] is None:
-                settings ['MQTT_CLIENT_ID'] = 'Homie_'+self.device_id
         else:
             settings = HOMIE_SETTINGS
 
         return settings
 
-    def _mqtt_validate_settings(self,settings):
-        for setting,value in MQTT_SETTINGS.items():
-            if not setting in settings:
-                settings [setting] = MQTT_SETTINGS [setting]
+    def _on_mqtt_connection(self,connected):
+        print("Device MQTT Connected {}".format(connected))
 
-        assert settings ['MQTT_BROKER']
-        assert settings ['MQTT_PORT']
-        return settings
-
-    def _mqtt_connect(self):
-        logger.debug("MQTT Connecting to {} as client {}".format(self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings['MQTT_CLIENT_ID']))
-
-        self.mqtt_client = mqtt_client.Client(client_id=self.mqtt_settings['MQTT_CLIENT_ID'])
-        self.mqtt_client.on_connect = self._on_connect
-        self.mqtt_client.on_message = self._on_message
-        self.mqtt_client.on_publish = self._on_publish
-        self.mqtt_client.on_disconnect = self._on_disconnect
-        self.mqtt_client.enable_logger(mqtt_logger)
-        
-        self.mqtt_client.will_set(
-            "/".join((self.topic, "$state")), "lost", retain=True, qos=1
-        )
-
-        if self.mqtt_settings ['MQTT_USERNAME']:
-            self.mqtt_client.username_pw_set(
-                    self.mqtt_settings ['MQTT_USERNAME'],
-                    password=self.mqtt_settings ['MQTT_PASSWORD']
-            )
-
-        try:
-            self.mqtt_client.connect_async(
-                self.mqtt_settings ['MQTT_BROKER'],
-                port=self.mqtt_settings ['MQTT_PORT'],
-                keepalive=self.mqtt_settings ['MQTT_KEEPALIVE'],
-            )
-
-            self.mqtt_connected = True # assume we are good to go
-
-            self.mqtt_client.loop_start()
-        except Exception as e:
-            logger.warning ('MQTT Unable to connect to Broker {}'.format(e))
-
-    def _on_connect(self,client, userdata, flags, rc):
-        logger.debug("MQTT Connect: {}".format(rc))        
-
-        if rc == 0:
-            self.mqtt_connected = True
+        if connected:
             self.publish_attributes()
             self.publish_nodes()
             self.subscribe_topics()
             self.state='ready'
-        else:
-            self.mqtt_connected = False
 
-    def _on_message(self, client, userdata, msg):
-        topic = msg.topic
-        payload = msg.payload.decode("utf-8")
-
-        logger.debug ('MQTT Message: Topic {}, Payload {}'.format(topic,payload))
-
-        if topic in self.mqtt_subscription_handlers:
-            self.mqtt_subscription_handlers [topic] (topic, payload)        
-        else:
-            logger.warning ('MQTT Unknown Message: Topic {}, Payload {}'.format(topic,payload))
-    
-    def _on_publish(self, *args):
-        #print('MQTT Publish: Payload {}'.format(*args))
-        pass
-
-    def _on_disconnect(self,*args):
-        logger.debug("MQTT Disconnect:")        
-        self.mqtt_connected = False
-
-
-    def __del__(self):
-        pass
-
-        #if self.timer:
-         #   self.timer.cancel()        
+    def _on_mqtt_message(self, topic, payload):
+        print ('Device MQTT Message: Topic {}, Payload {}'.format(topic,payload)) #for logging only, topic and handler for subsriptions above

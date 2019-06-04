@@ -4,8 +4,9 @@ import time
 
 from homie.device_dimmer import Device_Dimmer
 
+
 mqtt_settings = {
-    'MQTT_BROKER' : 'QueenMQTT',
+    'MQTT_BROKER' : 'OpenHAB',
     'MQTT_PORT' : 1883,
 }
 

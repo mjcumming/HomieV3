@@ -40,22 +40,4 @@ class Repeating_Timer (object):
         self.event.set()
         self.thread.join()
 
-def printme ():
-    print ('me')
-def printyou ():
-    print ('you')
-def printerr ():
-    print (10/0)
 
-
-if __name__ == "__main__":
-
-    rt = Repeating_Timer(6)
-
-    rt.add_callback(printme)
-    rt.add_callback(printyou)
-    rt.add_callback(printerr)
- 
-    #while True:
-    time.sleep (20)
-     #   pass

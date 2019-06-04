@@ -24,8 +24,9 @@ data_types = [
 class Property_Base(object):
 
     def __init__(self, node, id, name=None, settable=False, retained=True, qos=1, unit=None, data_type=None, data_format=None, value=None, set_value=None):
-        assert validate_id (id), id
-        assert node
+        if validate_id (id) is False:
+            logger.error('Property ID not valid {}'.format(id))
+            assert validate_id(id),'Property ID is not valid {}'.format(id)
 
         self.id = id
         self.name = name
