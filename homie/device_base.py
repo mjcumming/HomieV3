@@ -32,7 +32,7 @@ HOMIE_SETTINGS = {
     'fw_name' : 'homie v3',
     'fw_version' : homie.__version__, 
     'update_interval' : 60,
-    'implementation' : 'sys.platform', 
+    'implementation' : sys.platform, 
 }
 
 
@@ -164,12 +164,11 @@ class Device_Base(object):
         logger.debug ('Device MQTT Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
 
     def publish(self, topic, payload, retain=True, qos=1):
-        if self.mqtt_client.mqtt_connected:
+        #if self.mqtt_client.mqtt_connected:
             logger.debug('Device MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
             self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
-            print('Device publish',topic,payload)
-        else:
-            logger.warning('Device MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
+        #else:
+        #    logger.warning('Device MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
 
     def _homie_validate_settings(self,settings):
         if settings is not None:
@@ -183,14 +182,12 @@ class Device_Base(object):
         return settings
 
     def _on_mqtt_connection(self,connected):
-        logger.debug("Device MQTT Connected {}".format(connected))
+        logger.debug("Device MQTT Connected state is {}".format(connected))
 
         if self.mqtt_connected == connected:
             return 
         self.mqtt_connected = connected
 
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Device On Connected',self.name, connected)
-        
         if connected:
             self.publish_attributes()
             self.publish_nodes()
@@ -201,9 +198,6 @@ class Device_Base(object):
                 logger.debug ('Device setting last will')
 
             self.state='ready'
-        else:
-            assert False
-
 
     def _on_mqtt_message(self, topic, payload):
         logger.debug ('Device MQTT Message: Topic {}, Payload {}'.format(topic,payload)) #for logging only, topic and handler for subsriptions above

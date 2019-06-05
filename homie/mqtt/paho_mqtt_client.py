@@ -23,6 +23,15 @@ MQTT_SETTINGS = {
     'MQTT_CLIENT_ID' : None,
 }
 
+COONNECTION_RESULT_CODES = {
+    0: 'Connection successful',
+    1: 'Connection refused - incorrect protocol version',
+    2: 'Connection refused - invalid client identifier',
+    3: 'Connection refused - server unavailable',
+    4: 'Connection refused - bad username or password',
+    5: 'Connection refused - not authorised',
+}
+
 network_info = Network_Information()
 
 # wrapper arond the paho mqtt
@@ -30,7 +39,7 @@ network_info = Network_Information()
 class PAHO_MQTT_Client (object):
 
     def __init__(self, mqtt_settings={},on_connection=None,on_message=None):
-        logger.debug('Using PAHO MQTT Client')
+        logger.info('Using PAHO MQTT Client. Settings {}'.format(mqtt_settings))
         self.mqtt_settings = mqtt_settings
 
         self.mqtt_client= None
@@ -52,7 +61,6 @@ class PAHO_MQTT_Client (object):
 
     def set_will(self,will,topic,retain=True,qos=1):
         logger.info ('MQTT set will {}, topic {}'.format(will,topic))
-        print ('MQTT set will {}, topic {}'.format(will,topic))
         self.mqtt_client.will_set(will,topic,retain,qos)
 
     def add_subscription(self,topic,handler,qos=0): #subscription list to the required MQTT topics, used by properties to catch set topics
@@ -74,14 +82,14 @@ class PAHO_MQTT_Client (object):
     def _mqtt_connect(self):
         logger.debug("MQTT Connecting to {} as client {}".format(self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings['MQTT_CLIENT_ID']))
 
-        self.mqtt_client = mqtt_client.Client(client_id=self.mqtt_settings['MQTT_CLIENT_ID'])
+        self.mqtt_client = mqtt_client.Client()#client_id=self.mqtt_settings['MQTT_CLIENT_ID'])
         self.mqtt_client.on_connect = self._on_connect
         self.mqtt_client.on_message = self._on_message
         self.mqtt_client.on_publish = self._on_publish
         self.mqtt_client.on_disconnect = self._on_disconnect
         self.mqtt_client.enable_logger(mqtt_logger)
-        #self.mqtt_client.enable_logger()
-        
+        self.mqtt_client.enable_logger()
+
         if self.mqtt_settings ['MQTT_USERNAME']:
             self.mqtt_client.username_pw_set(
                     self.mqtt_settings ['MQTT_USERNAME'],
@@ -138,11 +146,15 @@ class PAHO_MQTT_Client (object):
         #logger.debug('MQTT Publish: Payload {}'.format(*args))
         pass
 
-    def _on_disconnect(self,*args):
+    def _on_disconnect(self,client,userdata,rc):
         if self.mqtt_connected:
-            logger.warn("MQTT On Disconnect:")     
+            self.mqtt_connected = False
             self.on_connection(self.mqtt_connected)
+
+        if rc > 0: #unexpected disconnect
+            rc_text = 'Unknown result code {}'.format(rc)
+            if rc in COONNECTION_RESULT_CODES:
+                rc_text = COONNECTION_RESULT_CODES [rc]
+
+            logger.warn ('MQTT Unexpected disconnection  {} {} {}'.format(client,userdata,rc_text))
         
-        self.mqtt_connected = False
-
-

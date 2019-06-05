@@ -16,9 +16,11 @@ MQTT_SETTINGS = {
     'MQTT_SHARE_CLIENT' : None,
 }
 
-mqtt_client_count = 1
+mqtt_client_count = 0
     
 def _mqtt_validate_settings(settings):
+    global mqtt_client_count
+    mqtt_client_count = mqtt_client_count + 1
     for setting,value in MQTT_SETTINGS.items():
         logger.debug ('MQTT Settings {} {}'.format(setting,value))
         if not setting in settings:
@@ -27,8 +29,9 @@ def _mqtt_validate_settings(settings):
     assert settings ['MQTT_BROKER']
     assert settings ['MQTT_PORT']
 
-    if settings ['MQTT_CLIENT_ID'] is None:
-        settings ['MQTT_CLIENT_ID'] = 'Homie_{:04d}'.format(mqtt_client_count) 
+    if settings ['MQTT_CLIENT_ID'] is None or settings ['MQTT_SHARE_CLIENT'] is False:
+        settings ['MQTT_CLIENT_ID'] = 'Homie{:04d}'.format(mqtt_client_count) 
+        print('client ID',settings ['MQTT_CLIENT_ID'])
 
     return settings
 

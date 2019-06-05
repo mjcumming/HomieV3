@@ -7,7 +7,7 @@ from homie.device_dimmer import Device_Dimmer
 mqtt_settings = {
     'MQTT_BROKER' : 'OpenHAB',
     'MQTT_PORT' : 1883,
-    'MQTT_SHARE_CLIENT' : True,
+    'MQTT_SHARE_CLIENT' : False,
 }
 
 
@@ -22,9 +22,7 @@ class My_Dimmer(Device_Dimmer):
 try:
 
     for x in range(5):
-        print ('starting',x)
         dimmer = My_Dimmer(name = 'Test Dimmer {}'.format(x),mqtt_settings=mqtt_settings)
-        print ('finshished',x)
         dimmers.append (dimmer)
     
     while True:
