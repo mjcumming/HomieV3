@@ -9,10 +9,10 @@ from homie.support.network_information import Network_Information
 
 import logging
 logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
+logger.setLevel('INFO')
 
-mqtt_logger = logging.getLogger(__name__)
-mqtt_logger.setLevel('WARN')
+mqtt_logger = logging.getLogger('MQTT')
+mqtt_logger.setLevel('INFO')
 
 MQTT_SETTINGS = {
     'MQTT_BROKER' : None,
@@ -43,7 +43,7 @@ class PAHO_MQTT_Client (object):
 
         self._mqtt_connect()
 
-    def publish(self, topic, payload, retain=True, qos=1):
+    def publish(self, topic, payload, retain=True, qos=0):
         if self.mqtt_connected:
             logger.debug('MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
             self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
@@ -51,6 +51,7 @@ class PAHO_MQTT_Client (object):
             logger.warning('MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
 
     def set_will(self,will,topic,retain=True,qos=1):
+        logger.info ('MQTT set will {}, topic {}'.format(will,topic))
         print ('MQTT set will {}, topic {}'.format(will,topic))
         self.mqtt_client.will_set(will,topic,retain,qos)
 
@@ -79,6 +80,7 @@ class PAHO_MQTT_Client (object):
         self.mqtt_client.on_publish = self._on_publish
         self.mqtt_client.on_disconnect = self._on_disconnect
         self.mqtt_client.enable_logger(mqtt_logger)
+        #self.mqtt_client.enable_logger()
         
         if self.mqtt_settings ['MQTT_USERNAME']:
             self.mqtt_client.username_pw_set(
@@ -107,8 +109,6 @@ class PAHO_MQTT_Client (object):
         else:
             connected = False
 
-        logger.debug (connected,self.mqtt_connected)
-
         if self.mqtt_connected != connected:
             self.mqtt_connected = connected
             logger.debug('MQTT Connection Status changed to {}'.format(connected))
@@ -119,7 +119,7 @@ class PAHO_MQTT_Client (object):
 
                 except Exception as ex:
                     logger.error('Device On Connect Error {}'.format(ex))
-                    traceback.logger.debug_exc()
+                    traceback.print_exc()
 
     def _on_message(self, client, userdata, msg):
         topic = msg.topic
@@ -139,8 +139,10 @@ class PAHO_MQTT_Client (object):
         pass
 
     def _on_disconnect(self,*args):
-        logger.debug("MQTT On Disconnect:")        
+        if self.mqtt_connected:
+            logger.warn("MQTT On Disconnect:")     
+            self.on_connection(self.mqtt_connected)
+        
         self.mqtt_connected = False
-        self.on_connection(self.mqtt_connected)
 
 

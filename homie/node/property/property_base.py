@@ -76,7 +76,7 @@ class Property_Base(object):
         self._topic =  "/".join([parent_topic,self.id])
 
     def publish(self, topic, payload, retain, qos):
-        self.node.publish (topic,payload,retain,qos)
+        self.node.property_publisher (topic,payload,retain,qos)
 
     def publish_attributes(self, retain=True, qos=1):
         self.publish ("/".join((self.topic, "$name")), self.name, retain, qos)

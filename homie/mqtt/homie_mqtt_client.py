@@ -20,6 +20,7 @@ mqtt_client_count = 1
     
 def _mqtt_validate_settings(settings):
     for setting,value in MQTT_SETTINGS.items():
+        logger.debug ('MQTT Settings {} {}'.format(setting,value))
         if not setting in settings:
             settings [setting] = MQTT_SETTINGS [setting]
 
@@ -41,6 +42,7 @@ def connect_mqtt_client (device,mqtt_settings):
         logger.debug ('using seperate clients')
         global mqtt_client_count
         mqtt_client_count = mqtt_client_count + 1
+        
         return mqtt_client
     else:
         global common_mqtt_client
@@ -49,6 +51,7 @@ def connect_mqtt_client (device,mqtt_settings):
 
         common_mqtt_client.add_device(device)
         logger.debug ('using shared client')
+
         return common_mqtt_client.mqtt_client
     
 

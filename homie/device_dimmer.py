@@ -5,7 +5,7 @@ from homie.node.node_dimmer import Node_Dimmer
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
+logger.setLevel('INFO')
 
 
 class Device_Dimmer(Device_Base):

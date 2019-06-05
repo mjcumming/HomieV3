@@ -68,6 +68,10 @@ class Device_Base(object):
         self.using_shared_mqtt_client = mqtt_settings ['MQTT_SHARE_CLIENT']
 
         self.start_time = None
+
+        self.nodes_published = False
+
+        self.mqtt_connected = False
     
     def generate_device_id(self):
         #logger.debug ('Device instances {}'.format(instance_count))
@@ -132,13 +136,13 @@ class Device_Base(object):
     def add_node(self,node):
         self.nodes [node.id] = node
 
-        if self.start_time is not None: #running, publish node changes
+        if self.nodes_published: #update, publish property changes
             self.publish_nodes(self.retained, self.qos)
 
     def remove_node(self, node_id): # not tested, needs work removing topics
         del self.nodes [node_id]
 
-        if self.start_time is not None: #running, publish property changes
+        if self.nodes_published: #update, publish property changes
             self.publish_nodes(retain = False)
 
     def get_node(self,node_id):
@@ -151,6 +155,8 @@ class Device_Base(object):
         nodes = ",".join(self.nodes.keys())
         self.publish("/".join((self.topic, "$nodes")), nodes, retain, qos)
 
+        self.nodes_published = True
+
         for _,node in self.nodes.items():
             node.publish_attributes(retain, qos)
 
@@ -161,12 +167,14 @@ class Device_Base(object):
         if self.mqtt_client.mqtt_connected:
             logger.debug('Device MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
             self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
+            print('Device publish',topic,payload)
         else:
             logger.warning('Device MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
 
     def _homie_validate_settings(self,settings):
         if settings is not None:
             for setting,value in HOMIE_SETTINGS.items():
+                logger.debug('Homie settings {} {}'.format(setting,value))
                 if not setting in settings:
                     settings [setting] = HOMIE_SETTINGS [setting]
         else:
@@ -177,6 +185,12 @@ class Device_Base(object):
     def _on_mqtt_connection(self,connected):
         logger.debug("Device MQTT Connected {}".format(connected))
 
+        if self.mqtt_connected == connected:
+            return 
+        self.mqtt_connected = connected
+
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Device On Connected',self.name, connected)
+        
         if connected:
             self.publish_attributes()
             self.publish_nodes()
@@ -184,9 +198,12 @@ class Device_Base(object):
 
             if self.using_shared_mqtt_client is False or self.instance_number == 1: # only set last will if NOT using shared client or if using shared client and this is the first device instance
                 self.mqtt_client.set_will("/".join((self.topic, "$state")), "lost", retain=True, qos=1)
-                logger.debug ('Device setting last will")
+                logger.debug ('Device setting last will')
 
             self.state='ready'
+        else:
+            assert False
+
 
     def _on_mqtt_message(self, topic, payload):
         logger.debug ('Device MQTT Message: Topic {}, Payload {}'.format(topic,payload)) #for logging only, topic and handler for subsriptions above
