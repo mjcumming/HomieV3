@@ -97,7 +97,7 @@ class PAHO_MQTT_Client (object):
             )
 
         try:
-            self.mqtt_client.connect_async(
+            self.mqtt_client.connect(
                 self.mqtt_settings ['MQTT_BROKER'],
                 port=self.mqtt_settings ['MQTT_PORT'],
                 keepalive=self.mqtt_settings ['MQTT_KEEPALIVE'],

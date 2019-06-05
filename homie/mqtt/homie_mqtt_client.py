@@ -21,6 +21,7 @@ mqtt_client_count = 0
 def _mqtt_validate_settings(settings):
     global mqtt_client_count
     mqtt_client_count = mqtt_client_count + 1
+    
     for setting,value in MQTT_SETTINGS.items():
         logger.debug ('MQTT Settings {} {}'.format(setting,value))
         if not setting in settings:
