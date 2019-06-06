@@ -82,6 +82,8 @@ class Device_Base(object):
         logger.debug ('Device startup')
         self.start_time = time.time()
 
+        self.mqtt_client.connect()
+
         global repeating_timer
         if repeating_timer == None:
             repeating_timer = Repeating_Timer(self.homie_settings['update_interval']* 1000)

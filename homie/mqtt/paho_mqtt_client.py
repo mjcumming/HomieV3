@@ -50,36 +50,7 @@ class PAHO_MQTT_Client (object):
 
         self.mqtt_subscription_handlers = {}
 
-        self._mqtt_connect()
-
-    def publish(self, topic, payload, retain=True, qos=0):
-        if self.mqtt_connected:
-            logger.debug('MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
-            self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
-        else:
-            logger.warning('MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
-
-    def set_will(self,will,topic,retain=True,qos=1):
-        logger.info ('MQTT set will {}, topic {}'.format(will,topic))
-        self.mqtt_client.will_set(will,topic,retain,qos)
-
-    def add_subscription(self,topic,handler,qos=0): #subscription list to the required MQTT topics, used by properties to catch set topics
-        self.mqtt_subscription_handlers [topic] = handler
-        self.mqtt_client.subscribe (topic,qos)
-        logger.debug ('MQTT subscribed to {}'.format(topic))    
-        
-    def remove_subscription(self,topic):
-        self.mqtt_client.unsubscribe (topic)
-        del self.mqtt_subscription_handlers [topic] 
-        logger.debug ('MQTT unsubscribed to {}'.format(topic))    
-
-    def get_mac_ip_address(self):
-        ip = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
-        mac = network_info.get_local_mac_for_ip(ip)
-
-        return mac,ip
-
-    def _mqtt_connect(self):
+    def connect(self):
         logger.debug("MQTT Connecting to {} as client {}".format(self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings['MQTT_CLIENT_ID']))
 
         self.mqtt_client = mqtt_client.Client()#client_id=self.mqtt_settings['MQTT_CLIENT_ID'])
@@ -107,6 +78,33 @@ class PAHO_MQTT_Client (object):
 
         except Exception as e:
             logger.warning ('MQTT Unable to connect to Broker {}'.format(e))
+
+    def publish(self, topic, payload, retain=True, qos=0):
+        if self.mqtt_connected:
+            logger.debug('MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
+            self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
+        else:
+            logger.warning('MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
+
+    def set_will(self,will,topic,retain=True,qos=1):
+        logger.info ('MQTT set will {}, topic {}'.format(will,topic))
+        self.mqtt_client.will_set(will,topic,retain,qos)
+
+    def add_subscription(self,topic,handler,qos=0): #subscription list to the required MQTT topics, used by properties to catch set topics
+        self.mqtt_subscription_handlers [topic] = handler
+        self.mqtt_client.subscribe (topic,qos)
+        logger.debug ('MQTT subscribed to {}'.format(topic))    
+        
+    def remove_subscription(self,topic):
+        self.mqtt_client.unsubscribe (topic)
+        del self.mqtt_subscription_handlers [topic] 
+        logger.debug ('MQTT unsubscribed to {}'.format(topic))    
+
+    def get_mac_ip_address(self):
+        ip = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
+        mac = network_info.get_local_mac_for_ip(ip)
+
+        return mac,ip
 
     def _on_connect(self,client, userdata, flags, rc):
         logger.debug("MQTT On Connect: {}".format(rc))       
