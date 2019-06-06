@@ -56,9 +56,7 @@ class Device_Base(object):
 
         self.homie_settings = self._homie_validate_settings (homie_settings)
         self.topic = "/".join((self.homie_settings ['topic'], self.device_id))
-    
-        self.mqtt_client = connect_mqtt_client(self,mqtt_settings)
-        
+       
         #may need a way to set these
         self.retained = True
         self.qos = 1
@@ -73,6 +71,8 @@ class Device_Base(object):
 
         self.mqtt_connected = False
     
+        self.mqtt_client = connect_mqtt_client(self,mqtt_settings)
+        
     def generate_device_id(self):
         #logger.debug ('Device instances {}'.format(instance_count))
         #return "{:02x}".format(get_mac())+"{:04d}".format(instance_count)
