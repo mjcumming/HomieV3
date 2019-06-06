@@ -63,8 +63,6 @@ class Device_Base(object):
 
         self.nodes = {}
 
-        self.using_shared_mqtt_client = mqtt_settings ['MQTT_SHARE_CLIENT']
-
         self.start_time = None
 
         self.nodes_published = False
@@ -72,6 +70,8 @@ class Device_Base(object):
         self.mqtt_connected = False
     
         self.mqtt_client = connect_mqtt_client(self,mqtt_settings)
+
+        self.using_shared_mqtt_client = mqtt_settings ['MQTT_SHARE_CLIENT']
         
     def generate_device_id(self):
         #logger.debug ('Device instances {}'.format(instance_count))
