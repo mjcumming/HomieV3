@@ -5,6 +5,7 @@ from homie.mqtt.paho_mqtt_client import PAHO_MQTT_Client
 import logging
 logger = logging.getLogger(__name__)
 
+print ('adsfasdfasdfasdf fuck')
 
 MQTT_SETTINGS = {
     'MQTT_BROKER' : None,
@@ -40,9 +41,9 @@ common_mqtt_client = None
 
 def connect_mqtt_client (device,mqtt_settings):
     mqtt_settings = _mqtt_validate_settings (mqtt_settings)
-
+    print('connectg')
     if mqtt_settings ['MQTT_SHARE_CLIENT'] is not True:
-        mqtt_client = PAHO_MQTT_Client (mqtt_settings,device._on_mqtt_connection,device._on_mqtt_message)
+        mqtt_client = PAHO_MQTT_Client (mqtt_settings,device)
         logger.debug ('using seperate clients')
         global mqtt_client_count
         mqtt_client_count = mqtt_client_count + 1

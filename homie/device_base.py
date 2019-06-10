@@ -67,11 +67,10 @@ class Device_Base(object):
 
         self.nodes_published = False
 
-        self.mqtt_connected = False
-    
         self.mqtt_client = connect_mqtt_client(self,mqtt_settings)
 
-        self.using_shared_mqtt_client = mqtt_settings ['MQTT_SHARE_CLIENT']
+        self.mqtt_subscription_handlers = {}
+
         
     def generate_device_id(self):
         #logger.debug ('Device instances {}'.format(instance_count))
@@ -91,7 +90,7 @@ class Device_Base(object):
         repeating_timer.add_callback (self.publish_statistics)
 
         if self.mqtt_client.mqtt_connected: #run start up tasks if mqtt is ready, else wait for on_connect message from mqtt client
-            self._on_mqtt_connection(True)
+            self.mqtt_on_connection(True)
 
         if self.state == 'init':
             self.state == 'ready'
@@ -123,9 +122,15 @@ class Device_Base(object):
     def publish_statistics(self, retain=True, qos=1):
         self.publish("/".join((self.topic, "$stats/uptime")),time.time()-self.start_time, retain, qos)
 
-    def add_subscription(self,topic,handler): #subscription list to the required MQTT topics, used by properties to catch set topics
-        self.mqtt_client.add_subscription (topic,handler)
-        logger.debug ('Device MQTT added subscription {}'.format(topic))
+    def add_subscription(self,topic,handler,qos=0): #subscription list to the required MQTT topics, used by properties to catch set topics
+        self.mqtt_subscription_handlers [topic] = handler
+        self.mqtt_client.subscribe (topic,qos)
+        logger.debug ('MQTT subscribed to {}'.format(topic))    
+        
+    def remove_subscription(self,topic):
+        self.mqtt_client.unsubscribe (topic)
+        del self.mqtt_subscription_handlers [topic] 
+        logger.debug ('MQTT unsubscribed to {}'.format(topic))    
 
     def subscribe_topics(self):
         logger.debug('Device subscribing to topics')
@@ -162,15 +167,12 @@ class Device_Base(object):
         for _,node in self.nodes.items():
             node.publish_attributes(retain, qos)
 
-    def broadcast_handler(self,topic,payload):
+    def broadcast_handler(self,topic,payload):#TBD
         logger.debug ('Device MQTT Homie Broadcast:  Topic {}, Payload {}'.format(topic,payload))
 
     def publish(self, topic, payload, retain=True, qos=1):
-        #if self.mqtt_client.mqtt_connected:
-            logger.debug('Device MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
-            self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
-        #else:
-        #    logger.warning('Device MQTT not connected, unable to publish topic: {}, payload: {}'.format(topic,payload))
+        logger.debug('Device MQTT publish topic: {}, retain {}, qos {}, payload: {}'.format(topic,retain,qos,payload))
+        self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
 
     def _homie_validate_settings(self,settings):
         if settings is not None:
@@ -183,23 +185,22 @@ class Device_Base(object):
 
         return settings
 
-    def _on_mqtt_connection(self,connected):
+    def mqtt_on_connection(self,connected):
         logger.debug("Device MQTT Connected state is {}".format(connected))
-
-        if self.mqtt_connected == connected:
-            return 
-        self.mqtt_connected = connected
 
         if connected:
             self.publish_attributes()
             self.publish_nodes()
             self.subscribe_topics()
 
-            if self.using_shared_mqtt_client is False or self.instance_number == 1: # only set last will if NOT using shared client or if using shared client and this is the first device instance
+            if self.mqtt_client.using_shared_mqtt_client is False or self.instance_number == 1: # only set last will if NOT using shared client or if using shared client and this is the first device instance
                 self.mqtt_client.set_will("/".join((self.topic, "$state")), "lost", retain=True, qos=1)
                 logger.debug ('Device setting last will')
 
-            self.state='ready'
-
-    def _on_mqtt_message(self, topic, payload):
+    def mqtt_on_message(self, topic, payload):
         logger.debug ('Device MQTT Message: Topic {}, Payload {}'.format(topic,payload)) #for logging only, topic and handler for subsriptions above
+
+        if topic in self.mqtt_subscription_handlers:
+            self.mqtt_subscription_handlers [topic] (topic, payload)        
+        else:
+            logger.warning ('MQTT Unknown Message: Topic {}, Payload {}'.format(topic,payload))    

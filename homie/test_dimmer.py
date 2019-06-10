@@ -2,7 +2,7 @@
 
 import time
 
-from homie.device_dimmer import Device_Dimmer
+from device_dimmer import Device_Dimmer
 
 import logging
 logger = logging.getLogger(__name__)
