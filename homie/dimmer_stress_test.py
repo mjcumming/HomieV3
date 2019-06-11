@@ -5,11 +5,15 @@ import time
 from homie.device_dimmer import Device_Dimmer
 
 mqtt_settings = {
-    'MQTT_BROKER' : 'OpenHAB',
+    'MQTT_BROKER' : 'OpenHABianPI',
     'MQTT_PORT' : 1883,
     'MQTT_SHARE_CLIENT' : False,
 }
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel('INFO')
 
 dimmers = []
 

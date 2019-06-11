@@ -5,7 +5,7 @@
 
 Base MQTT Client for a Homie device
 
-To allow for easy replacement of the MQTT client
+To allow for easy use of different MQTT clients
 
 '''
 from homie.support.network_information import Network_Information
@@ -27,23 +27,19 @@ MQTT_SETTINGS = {
 
 class MQTT_Base (object):
 
-    def __init__(self, mqtt_settings, homie_device):
-        logger.info('MQTT client Settings {}'.format(mqtt_settings))
-        self.mqtt_settings = self._validate_mqtt_settings (mqtt_settings)
+    def __init__(self, mqtt_settings):
+        logger.debug('MQTT client Settings {}'.format(mqtt_settings))
+
         self.using_shared_mqtt_client = mqtt_settings ['MQTT_SHARE_CLIENT']
+
+        self.mqtt_settings = mqtt_settings
 
         self._mqtt_connected = False
 
-        self.device = homie_device
+        self.ip_address = None
+        self.mac_address = None
 
-    def _validate_mqtt_settings(self,settings):
-        for setting,_ in MQTT_SETTINGS.items():
-            if not setting in settings:
-                settings [setting] = MQTT_SETTINGS [setting]
-        assert settings ['MQTT_BROKER']
-        assert settings ['MQTT_PORT']
-
-        return settings
+        self.homie_devices = []
 
     @property
     def mqtt_connected(self):
@@ -54,8 +50,9 @@ class MQTT_Base (object):
         if connected != self._mqtt_connected:
             logger.debug("MQTT Connected {} ".format(connected))
             self._mqtt_connected = connected
-
-            self.device.mqtt_on_connection(self.mqtt_connected)
+            for device in self.homie_devices:
+                if device.start_time is not None:
+                    device.mqtt_on_connection(connected)
 
     def connect(self): #called by the device when its ready for the mqtt client to start, subclass to provide
         logger.debug("MQTT Connecting to {} as client {}".format(self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings['MQTT_CLIENT_ID']))
@@ -63,18 +60,35 @@ class MQTT_Base (object):
     def publish(self, topic, payload, retain=True, qos=0): #subclass to provide
         logger.debug('MQTT publish topic: {}, payload: {}, retain {}, qos {}'.format(topic,payload,retain,qos))
 
+    def subscribe(self, topic, qos=0): #subclass to provide
+        logger.debug('MQTT subscribe  topic: {}, qos {}'.format(topic,qos))
+
+    def unsubscribe(self, topic): #subclass to provide
+        logger.debug('MQTT unsubscribe  topic: {}'.format(topic))
+
     def set_will(self,will,topic,retain=True,qos=1): #subclass to provide
-        logger.info ('MQTT set will {}, topic {}'.format(will,topic))
+        logger.debug ('MQTT set will {}, topic {}'.format(will,topic))
 
     def get_mac_ip_address(self):
-        ip = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
-        mac = network_info.get_local_mac_for_ip(ip)
 
-        return mac,ip
+        if self.ip_address is None:
+            self.ip_address = network_info.get_local_ip (self.mqtt_settings ['MQTT_BROKER'],self.mqtt_settings ['MQTT_PORT'])
+
+        if self.mac_address is None:
+            self.mac_address = network_info.get_local_mac_for_ip(self.ip_address)
+
+        return self.mac_address, self.ip_address
 
     def _on_message(self,topic,payload):
         logger.debug ('MQTT On Message: Topic {}, Payload {}'.format(topic,payload))
-        self.device.mqtt_on_message (topic,payload)
-      
+        for device in self.homie_devices:
+            if device.start_time is not None:
+                device.mqtt_on_message(topic,payload) 
 
-        
+    def add_device(self,device):
+        self.homie_devices.append(device)
+
+    def remove_device(self,device): # not tested
+        del self.homie_devices [device]
+
+

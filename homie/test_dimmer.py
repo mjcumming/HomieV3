@@ -2,11 +2,12 @@
 
 import time
 
-from device_dimmer import Device_Dimmer
+from homie.device_dimmer import Device_Dimmer
 
 import logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
+logger.setLevel('INFO')
 
 
 mqtt_settings = {

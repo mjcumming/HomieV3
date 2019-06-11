@@ -81,8 +81,6 @@ class Device_Base(object):
         logger.debug ('Device startup')
         self.start_time = time.time()
 
-        self.mqtt_client.connect()
-
         global repeating_timer
         if repeating_timer == None:
             repeating_timer = Repeating_Timer(self.homie_settings['update_interval']* 1000)
@@ -91,10 +89,7 @@ class Device_Base(object):
 
         if self.mqtt_client.mqtt_connected: #run start up tasks if mqtt is ready, else wait for on_connect message from mqtt client
             self.mqtt_on_connection(True)
-
-        if self.state == 'init':
-            self.state == 'ready'
-
+        
     @property
     def state(self):
         return self._state
@@ -103,7 +98,7 @@ class Device_Base(object):
     def state(self, state, retain = True, qos = 1):
         if state in DEVICE_STATES:
             self._state = state
-            self.publish( "/".join((self.topic, "$state")),self._state, retain, 1)
+            self.publish( "/".join((self.topic, "$state")),self._state, retain, qos)
         else:
             logger.warning ('Homie Invalid device state {}'.format(state))
 
@@ -119,6 +114,8 @@ class Device_Base(object):
         self.publish("/".join((self.topic, "$implementation")),self.homie_settings ['implementation'], retain, qos)
         self.publish("/".join((self.topic, "$stats/interval")),self.homie_settings ['update_interval'], retain, qos)
 
+        self.state = 'ready'
+
     def publish_statistics(self, retain=True, qos=1):
         self.publish("/".join((self.topic, "$stats/uptime")),time.time()-self.start_time, retain, qos)
 
@@ -127,7 +124,7 @@ class Device_Base(object):
         self.mqtt_client.subscribe (topic,qos)
         logger.debug ('MQTT subscribed to {}'.format(topic))    
         
-    def remove_subscription(self,topic):
+    def remove_subscription(self,topic): 
         self.mqtt_client.unsubscribe (topic)
         del self.mqtt_subscription_handlers [topic] 
         logger.debug ('MQTT unsubscribed to {}'.format(topic))    

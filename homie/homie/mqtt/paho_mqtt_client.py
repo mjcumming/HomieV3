@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel('INFO')
 
 mqtt_logger = logging.getLogger('MQTT')
-mqtt_logger.setLevel('DEBUG')
+mqtt_logger.setLevel('INFO')
 
 
 COONNECTION_RESULT_CODES = {
@@ -24,19 +24,17 @@ COONNECTION_RESULT_CODES = {
     5: 'Connection refused - not authorised',
 }
 
-# wrapper arond the paho mqtt
+class PAHO_MQTT_Client (MQTT_Base): 
 
-class PAHO_MQTT_Client (MQTT_Base):
-
-    def __init__(self, mqtt_settings,homie_device):
-        MQTT_Base.__init__(self,mqtt_settings,homie_device)
+    def __init__(self, mqtt_settings):
+        MQTT_Base.__init__(self,mqtt_settings)
 
         self.mqtt_client= None
 
     def connect(self):
         MQTT_Base.connect(self)
 
-        self.mqtt_client = mqtt_client.Client()#client_id=self.mqtt_settings['MQTT_CLIENT_ID'])
+        self.mqtt_client = mqtt_client.Client(client_id=self.mqtt_settings['MQTT_CLIENT_ID'])
         self.mqtt_client.on_connect = self._on_connect
         self.mqtt_client.on_message = self._on_message
         #self.mqtt_client.on_publish = self._on_publish
@@ -63,9 +61,16 @@ class PAHO_MQTT_Client (MQTT_Base):
             logger.warning ('MQTT Unable to connect to Broker {}'.format(e))
 
     def publish(self, topic, payload, retain=True, qos=0):
-        print ('paho piub')
         MQTT_Base.publish(self,topic,payload,retain,qos)
         self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
+    
+    def subscribe(self, topic, qos=0): #subclass to provide
+        MQTT_Base.subscribe(self,topic,qos)
+        self.mqtt_client.subscribe(topic,qos)
+
+    def unsubscribe(self, topic): #subclass to provide
+        MQTT_Base.unsubscribe(self,topic)
+        self.mqtt_client.unsubscribe(topic)
 
     def set_will(self,will,topic,retain=True,qos=1):
         MQTT_Base.set_will(self,will,topic,retain,qos)
@@ -76,12 +81,9 @@ class PAHO_MQTT_Client (MQTT_Base):
         self.mqtt_connected = (rc == 0)
 
     def _on_message(self, client, userdata, msg):
-        print (1)
         topic = msg.topic
         payload = msg.payload.decode("utf-8")
-        print(2)
         MQTT_Base._on_message(self,topic,payload)
-        print(3)
 
     def _on_disconnect(self,client,userdata,rc):
         self.mqtt_connected = False
