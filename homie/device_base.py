@@ -195,9 +195,7 @@ class Device_Base(object):
                 logger.debug ('Device setting last will')
 
     def mqtt_on_message(self, topic, payload):
-        logger.debug ('Device MQTT Message: Topic {}, Payload {}'.format(topic,payload)) #for logging only, topic and handler for subsriptions above
-
         if topic in self.mqtt_subscription_handlers:
+            logger.debug ('Device MQTT Message: Topic {}, Payload {}'.format(topic,payload)) #for logging only, topic and handler for subsriptions above
             self.mqtt_subscription_handlers [topic] (topic, payload)        
-        else:
-            logger.warning ('MQTT Unknown Message: Topic {}, Payload {}'.format(topic,payload))    
+   

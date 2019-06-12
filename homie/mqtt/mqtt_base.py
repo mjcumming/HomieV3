@@ -82,7 +82,7 @@ class MQTT_Base (object):
     def _on_message(self,topic,payload):
         logger.debug ('MQTT On Message: Topic {}, Payload {}'.format(topic,payload))
         for device in self.homie_devices:
-            if device.start_time is not None:
+            if device.start_time is not None: #device is ready
                 device.mqtt_on_message(topic,payload) 
 
     def add_device(self,device):
