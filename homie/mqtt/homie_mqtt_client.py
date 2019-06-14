@@ -28,9 +28,11 @@ def _mqtt_validate_settings(settings):
     assert settings ['MQTT_BROKER']
     assert settings ['MQTT_PORT']
 
+    ''' cannot use if two homie clients running from same pc
     if settings ['MQTT_CLIENT_ID'] is None or settings ['MQTT_SHARE_CLIENT'] is False:
         settings ['MQTT_CLIENT_ID'] = 'homiev3{:04d}'.format(mqtt_client_count) 
-
+    '''
+    
     return settings
 
 common_mqtt_client = None
