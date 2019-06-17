@@ -46,3 +46,5 @@ except (KeyboardInterrupt, SystemExit):
 
 
 ~~~~
+
+If creating multiple homie devices, you can specify Homie to only use one MQTT connection. This can be an issue on devices with limited resources. For MQTT_SETTINGS add MQTT_SHARE_CLIENT: True.
