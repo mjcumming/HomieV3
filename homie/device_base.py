@@ -18,21 +18,21 @@ instance_count = 0 # used to track the number of device instances to allow for c
 repeating_timer = None # use common timer between all devices for updating state
 
 DEVICE_STATES = [
-    "init", 
-    "ready", 
-    "disconnected", 
-    "sleeping", 
+    "init",
+    "ready",
+    "disconnected",
+    "sleeping",
     "alert",
     "lost",
 ]
 
 HOMIE_SETTINGS = {
     'version' : '3.0.1',
-    'topic' : 'homie', 
+    'topic' : 'homie',
     'fw_name' : 'homie v3',
-    'fw_version' : homie.__version__, 
+    'fw_version' : homie.__version__,
     'update_interval' : 60,
-    'implementation' : sys.platform, 
+    'implementation' : sys.platform,
 }
 
 
@@ -56,7 +56,7 @@ class Device_Base(object):
 
         self.homie_settings = self._homie_validate_settings (homie_settings)
         self.topic = "/".join((self.homie_settings ['topic'], self.device_id))
-       
+
         #may need a way to set these
         self.retained = True
         self.qos = 1
@@ -71,7 +71,7 @@ class Device_Base(object):
 
         self.mqtt_subscription_handlers = {}
 
-        
+
     def generate_device_id(self):
         #logger.debug ('Device instances {}'.format(instance_count))
         #return "{:02x}".format(get_mac())+"{:04d}".format(instance_count)
@@ -83,13 +83,13 @@ class Device_Base(object):
 
         global repeating_timer
         if repeating_timer == None:
-            repeating_timer = Repeating_Timer(self.homie_settings['update_interval']* 1000)
+            repeating_timer = Repeating_Timer(self.homie_settings['update_interval'])
 
         repeating_timer.add_callback (self.publish_statistics)
 
         if self.mqtt_client.mqtt_connected: #run start up tasks if mqtt is ready, else wait for on_connect message from mqtt client
             self.mqtt_on_connection(True)
-        
+
     @property
     def state(self):
         return self._state
@@ -118,16 +118,17 @@ class Device_Base(object):
 
     def publish_statistics(self, retain=True, qos=1):
         self.publish("/".join((self.topic, "$stats/uptime")),time.time()-self.start_time, retain, qos)
+        self.publish("/".join((self.topic, "$stats/interval")),self.homie_settings ['update_interval'], retain, qos)
 
     def add_subscription(self,topic,handler,qos=0): #subscription list to the required MQTT topics, used by properties to catch set topics
         self.mqtt_subscription_handlers [topic] = handler
         self.mqtt_client.subscribe (topic,qos)
-        logger.debug ('MQTT subscribed to {}'.format(topic))    
-        
-    def remove_subscription(self,topic): 
+        logger.debug ('MQTT subscribed to {}'.format(topic))
+
+    def remove_subscription(self,topic):
         self.mqtt_client.unsubscribe (topic)
-        del self.mqtt_subscription_handlers [topic] 
-        logger.debug ('MQTT unsubscribed to {}'.format(topic))    
+        del self.mqtt_subscription_handlers [topic]
+        logger.debug ('MQTT unsubscribed to {}'.format(topic))
 
     def subscribe_topics(self):
         logger.debug('Device subscribing to topics')
@@ -136,7 +137,7 @@ class Device_Base(object):
         for _,node in self.nodes.items():
             for topic,handler in node.get_subscriptions().items():
                 self.add_subscription(topic,handler)
-  
+
     def add_node(self,node):
         self.nodes [node.id] = node
 
@@ -197,5 +198,4 @@ class Device_Base(object):
     def mqtt_on_message(self, topic, payload):
         if topic in self.mqtt_subscription_handlers:
             logger.debug ('Device MQTT Message: Topic {}, Payload {}'.format(topic,payload)) #for logging only, topic and handler for subsriptions above
-            self.mqtt_subscription_handlers [topic] (topic, payload)        
-   
+            self.mqtt_subscription_handlers [topic] (topic, payload)
