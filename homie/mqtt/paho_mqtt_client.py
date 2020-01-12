@@ -61,6 +61,9 @@ class PAHO_MQTT_Client (MQTT_Base):
             logger.warning ('MQTT Unable to connect to Broker {}'.format(e))
 
     def publish(self, topic, payload, retain=True, qos=0):
+        if isinstance(payload, bool):
+          # boolean types must be sent as "true" or "false"
+          payload = str(payload).lower()
         MQTT_Base.publish(self,topic,payload,retain,qos)
         self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
     
