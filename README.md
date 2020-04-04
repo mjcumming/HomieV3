@@ -1,3 +1,5 @@
+#Use the Homie4 https://github.com/mjcumming/homie4 implementation. This library not actively being maintained.
+
 # Homie
 
 Python implementation of Homie 3.0.1
